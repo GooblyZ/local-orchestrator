@@ -1,6 +1,6 @@
 # Local AI Orchestrator — Codex manages, Claude Code programs, Python relays
 
-**Use it:** double-click `start.cmd`. The browser app opens on 127.0.0.1, with a home screen and the full flow:
+**Use it:** double-click **`start.cmd`**. It is in the project's main (root) folder, next to `orchestrator.py` and `README.md` - on this machine: `C:\Users\User\VibeCoding\projects\local-ai-orchestrator\start.cmd` (details: [Start the local server](#start-the-local-server-browser-app)). The browser app opens on 127.0.0.1, with a home screen and the full flow:
 1. Type the task and press "התחל משימה".
 2. Check the confirmation and accept local execution.
 3. Watch Codex and Claude work.
@@ -155,7 +155,7 @@ In this section `<project>` means the folder you cloned this repository into, fo
    ```
 
 **Start it:**
-- **Double-click `<project>\start.cmd`**, or in a terminal opened in `<project>` run:
+- **Double-click `<project>\start.cmd`**. The file `start.cmd` sits directly in the project's root folder (next to `orchestrator.py`), e.g. `C:\Users\User\VibeCoding\projects\local-ai-orchestrator\start.cmd`. Or, in a terminal opened in `<project>` run:
   ```
   cd <project>
   python -B orchestrator.py app
