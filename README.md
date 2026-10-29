@@ -118,6 +118,43 @@ The Python orchestrator is not an agent. It relays messages, keeps the Claude se
 - **Restricted profile:** one live run (`runs/20261012-193015-mvp-live-acceptance`).
 - **Native profile:** the native integration (permissions, approvals, session continuation, Codex evidence) is covered by simulated-CLI tests. No live native run has been made yet.
 
+## Start the local server (browser app)
+
+**Requirements (once):**
+1. Windows with **Python 3.11+** on PATH (`python --version`). The orchestrator itself uses only the standard library.
+2. **Claude Code CLI** installed and signed in with your Claude subscription (`claude` on PATH; `claude auth status` must show `claude.ai`). The pinned version is set in `config.json` (`claude.pinned_version`).
+3. **Codex CLI**, project-local (never the global install), plus Node.js/npm:
+   ```
+   cd toolchain\codex
+   npm install @openai/codex@0.162.1
+   ```
+   Codex runs with its own home folder `%USERPROFILE%\.codex-orchestrator-home` (sign in there with your ChatGPT account, `forced_login_method = "chatgpt"`, read-only sandbox, no MCP servers, no `service_tier`). See [Codex adapter](#codex-adapter-planner--reviewer) for every required setting.
+4. Check both CLIs without any model call - each prints exactly what is still missing:
+   ```
+   python orchestrator.py codex-preflight
+   python orchestrator.py claude-preflight
+   ```
+
+**Start it:**
+- **Double-click `start.cmd`** in the project folder, or from a terminal in the project folder run:
+  ```
+  python -B orchestrator.py app
+  ```
+- The console prints the address, e.g. `http://127.0.0.1:55295/?t=<token>`, and your browser opens it automatically. The server listens on **127.0.0.1 only** (this computer); the `t=` token in the URL is required, so use the printed link.
+- **Keep the console window open** while you use the app or a task runs (you may minimize it). Closing it stops the server; a running task then shows as interrupted and can be resumed later - nothing is lost.
+
+**Options** (they go before `app`):
+```
+python -B orchestrator.py --port 8765 app     # a fixed port instead of a random free one
+python -B orchestrator.py --no-open app       # do not open the browser; just print the URL
+```
+
+**Good to know:**
+- Starting it again while it runs (a second `start.cmd`) does not start a second server: it reopens the running app in the browser.
+- The current address is also saved in `runs/_app.json` (`url`).
+- To stop: close the console window, or press `Ctrl+C` in it.
+- If the page says a preflight failed, run the two preflight commands above; nothing calls a model until you confirm a task in the browser.
+
 ## Setup
 Python 3.11+ (uses `tomllib`) and the standard library only. Nothing to install for the orchestrator itself.
 The pinned Codex CLI lives in `toolchain/codex` (project-local, git-ignored); the global Codex install is never used.
