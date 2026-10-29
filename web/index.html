@@ -1,0 +1,1526 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>שיחת Codex ו-Claude</title>
+<style nonce="__NONCE__">
+:root{--bg:#f6f6f3;--panel:#fff;--ink:#1d2127;--muted:#5f6672;--line:#e5e3dd;--soft:#f1f0ec;
+--codex:#5b3cc4;--codex-soft:#f4f1ff;--codex-line:#ddd5fa;--claude:#b4531a;--claude-soft:#fff6ef;--claude-line:#f6dcc7;
+--ok:#177245;--ok-soft:#eaf7ef;--bad:#b42318;--bad-soft:#fdf0ef;--warn:#8a5a00;--warn-soft:#fdf7e6;--human:#7a2cbf;--human-soft:#f7f0fd;
+--info:#1f5fa8;--info-soft:#eef5fd;--code-bg:#f7f8fa;--shadow:0 1px 2px rgba(20,20,30,.05),0 4px 14px rgba(20,20,30,.04)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font:15.5px/1.6 "Segoe UI","Rubik","Assistant","Heebo",Arial,sans-serif}
+button,select{font:inherit;font-size:13.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 12px;cursor:pointer}
+button:hover,select:hover{border-color:#bdb9b0}
+button:focus-visible,select:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--codex);outline-offset:2px}
+.top{position:sticky;top:0;z-index:10;background:rgba(246,246,243,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1240px;margin:0 auto;padding:10px 20px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.brand{display:flex;gap:10px;align-items:center;flex:1 1 300px;min-width:0}
+.pair{display:flex;flex:none}.pair span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 11px/1 system-ui;border:2px solid var(--bg)}
+.pair .cx{background:var(--codex)}.pair .cl{background:var(--claude);margin-inline-start:-8px}
+.ttl{min-width:0}
+h1{font-size:16.5px;margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;unicode-bidi:plaintext}
+.sub{font-size:12.5px;color:var(--muted)}
+.seg{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:5px 14px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0;max-width:100%}
+.tools select{max-width:320px;min-width:0}
+#sideBtn[aria-pressed="true"]{background:var(--soft)}
+.layout{max-width:1240px;margin:0 auto;padding:22px 20px 70px;display:grid;grid-template-columns:minmax(0,1fr) 264px;gap:26px;align-items:start}
+.layout.noside{grid-template-columns:minmax(0,1fr)}.layout.noside aside{display:none}
+main{min-width:0}
+aside{position:sticky;top:76px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 15px;box-shadow:var(--shadow)}
+.card h2{font-size:12.5px;font-weight:700;margin:0 0 8px;color:var(--muted)}
+.state{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14.5px;padding:3px 12px;border-radius:999px}
+.state::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.st-live{color:var(--ok);background:var(--ok-soft)}.st-live::before{animation:pulse 1.4s ease-in-out infinite}
+.st-saved{color:#454c59;background:var(--soft)}.st-warn{color:var(--warn);background:var(--warn-soft)}.st-replay{color:var(--info);background:var(--info-soft)}
+@keyframes pulse{50%{opacity:.25}}
+.explain{color:var(--muted);font-size:13px;margin:8px 0 0}
+.now{margin-top:12px;font-weight:600;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:14px}
+.who-codex{color:var(--codex)}.who-claude{color:var(--claude)}.who-sys{color:var(--muted)}
+.steps{display:flex;gap:4px;margin-top:10px}
+.step{flex:1 1 0;text-align:center;font-size:11.5px;padding:5px 2px;border-radius:7px;background:var(--soft);color:var(--muted);border:1px solid transparent}
+.step.cur{background:var(--panel);border-color:currentColor;font-weight:700}.step.cur.codex{color:var(--codex)}.step.cur.claude{color:var(--claude)}.step.cur.sys{color:var(--info)}
+.meta-line{font-size:12.5px;color:var(--muted);margin-top:6px}
+.mono{direction:ltr;text-align:right;font:12px/1.4 ui-monospace,Consolas,monospace;word-break:break-all}
+.cycles{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:13px}
+.cycles li{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline}.cycles b{min-width:44px}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.legend div{display:flex;gap:8px;align-items:center}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}.dot.cx{background:var(--codex)}.dot.cl{background:var(--claude)}
+.t-good{color:var(--ok)}.t-bad{color:var(--bad)}.t-no{color:var(--muted)}.t-yes{color:var(--ink)}.t-approve{color:var(--codex)}.t-warn{color:var(--warn)}.t-human{color:var(--human)}
+.chat{display:flex;flex-direction:column;gap:16px;max-width:880px;margin-inline:auto}
+.mock{display:flex;gap:10px;align-items:center;background:#fff8e1;border:1px dashed #c99a1e;color:#5c4300;border-radius:12px;padding:10px 14px;font-size:14px}
+.mtag{flex:none;font:700 11.5px/1 system-ui;letter-spacing:.08em;background:#5c4300;color:#fff;padding:4px 8px;border-radius:5px}
+.taskp{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 16px;box-shadow:var(--shadow)}
+.label{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:3px}
+.text{white-space:pre-wrap;word-break:break-word;unicode-bidi:plaintext}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.linkbtn{border:0;background:none;padding:0;color:var(--codex);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.cdiv{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12.5px;font-weight:700;margin-top:4px}
+.cdiv::before,.cdiv::after{content:"";flex:1;height:1px;background:var(--line)}
+.turn{display:flex;gap:10px;align-items:flex-start;max-width:min(90%,720px)}
+.turn.codex{align-self:flex-start}.turn.claude{align-self:flex-end;flex-direction:row-reverse}
+.av{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 12px/1 system-ui;margin-top:2px}
+.codex .av{background:var(--codex)}.claude .av{background:var(--claude)}
+.bub{min-width:0;flex:1;border-radius:16px;padding:12px 15px;border:1px solid;box-shadow:var(--shadow)}
+.codex .bub{background:var(--codex-soft);border-color:var(--codex-line);border-start-start-radius:6px}
+.claude .bub{background:var(--claude-soft);border-color:var(--claude-line);border-start-end-radius:6px}
+.bh{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-bottom:8px}
+.bh .nm{font-weight:700}.codex .nm{color:var(--codex)}.claude .nm{color:var(--claude)}
+.bh .what{font-size:13.5px;color:var(--muted)}
+.chip{display:inline-block;font-size:12.5px;font-weight:700;padding:1px 10px;border-radius:999px}
+.c-ok{color:var(--ok);background:var(--ok-soft)}.c-warn{color:var(--warn);background:var(--warn-soft)}.c-bad{color:var(--bad);background:var(--bad-soft)}
+.c-human{color:var(--human);background:var(--human-soft)}.c-info{color:var(--info);background:var(--info-soft)}.c-muted{color:var(--muted);background:var(--soft)}.c-approve{color:var(--codex);background:#ece7ff}
+.lbl{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:2px}
+.say .tx{font-size:16px;line-height:1.7}
+.sysdesc .tx{font-size:14.5px;color:#30363f}
+.orig{margin-top:10px;padding:6px 12px 8px;border-inline-start:3px solid rgba(0,0,0,.09);background:rgba(255,255,255,.65);border-radius:6px;font-size:14.5px}
+.field{margin-top:8px}.field:first-child{margin-top:2px}
+.field ul{margin:2px 0;padding-inline-start:20px}.field li{margin:2px 0}
+.panel{margin-top:10px}
+.code{direction:ltr;text-align:left;border:1px solid var(--line);border-radius:10px;background:var(--code-bg);margin-top:4px;overflow:hidden}
+.code-h{direction:rtl;display:flex;gap:8px;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid var(--line);background:var(--panel)}
+.code-h .cl{font-size:12.5px;font-weight:700}
+.code-h .btns{display:flex;gap:6px}.code-h button{font-size:12px;padding:2px 9px}
+pre,.files,.th,.mono{font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
+pre{margin:0;padding:10px 12px;font:13px/1.55 Consolas,"Courier New",ui-monospace,monospace;white-space:pre-wrap;word-break:break-word;overflow:auto;color:#1f2328}
+pre.cut{max-height:18em}
+.raw{direction:ltr;text-align:left;margin-top:10px;border:1px dashed #c9c6be;border-radius:10px;background:var(--panel)}
+.raw .rl{direction:rtl;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:5px 10px;border-bottom:1px dashed #d9d6cf}
+.raw .rl button{font-size:12px;padding:1px 9px}
+.bf{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.bf .tm{margin-inline-end:auto}
+.bf button{font-size:12.5px;padding:2px 11px;background:rgba(255,255,255,.7)}
+.bf button[aria-expanded="true"]{background:var(--panel);border-color:#bdb9b0;font-weight:600}
+.sys{align-self:center;width:min(100%,640px);border-radius:12px;padding:9px 14px;font-size:14px;border:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;gap:4px}
+.sys .sh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sys.ok{background:var(--ok-soft);border-color:#c6e7d3}.sys.bad{background:var(--bad-soft);border-color:#f3cdc9}.sys.static{background:var(--info-soft);border-color:#cfe0f5}
+.sys.warn{background:var(--warn-soft);border-color:#efe0b4}.sys.human{background:var(--human-soft);border-color:#e6d3f6}
+.sys .small,.small{font-size:12.5px;color:var(--muted)}
+.files{direction:ltr;text-align:left;font:12.5px ui-monospace,Consolas,monospace;color:#3f4652}
+.flist{margin:4px 0 0;padding-inline-start:18px}.flist li{margin:2px 0}.flist .files{unicode-bidi:isolate}
+details>summary{cursor:pointer;color:var(--muted);font-size:13px}
+details[open]>summary{margin-bottom:6px}
+.typing .bub{border-style:dashed;background:var(--panel)}
+.dots{display:inline-flex;gap:4px;margin-inline-start:4px}.dots i{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.3;animation:d 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}@keyframes d{40%{opacity:1}}
+.result{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--muted);border-radius:14px;padding:15px 18px;box-shadow:var(--shadow)}
+.result.ok{border-top-color:var(--ok)}.result.review{border-top-color:var(--codex)}.result.static{border-top-color:var(--info)}.result.bad{border-top-color:var(--bad)}
+.result .big{font-size:17px;font-weight:700;margin:2px 0 4px}
+.ev{list-style:none;margin:12px 0 10px;padding:0;display:grid;gap:5px}
+.ev li{display:grid;grid-template-columns:20px 170px minmax(0,1fr);gap:8px;align-items:baseline;font-size:14px;padding:3px 0;border-bottom:1px solid var(--soft)}
+.ev .ic{font-weight:700;text-align:center}.ev .k{color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:70px 10px}
+[hidden]{display:none!important}
+.home{max-width:820px;margin:8px auto 0;display:flex;flex-direction:column;gap:18px}
+.hero h2{font-size:30px;margin:0;letter-spacing:-.02em}.hero h2 .cx{color:var(--codex)}.hero h2 .cl{color:var(--claude)}
+.hero p{margin:6px 0 0;color:var(--muted);font-size:15px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.role{border-radius:12px;padding:10px 14px;font-size:14px;border:1px solid}.role b{display:block}
+.role.cx{background:var(--codex-soft);border-color:var(--codex-line)}.role.cx b{color:var(--codex)}
+.role.cl{background:var(--claude-soft);border-color:var(--claude-line)}.role.cl b{color:var(--claude)}
+.ask{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.ask textarea{width:100%;min-height:150px;resize:vertical;font:inherit;font-size:16px;line-height:1.6;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fcfcfa;color:var(--ink)}
+.ask textarea:focus,.ask input:focus,.ask select:focus{outline:2px solid var(--codex);outline-offset:1px}
+.ask details{border-top:1px solid var(--soft);padding-top:8px}.ask summary{font-size:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:8px}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}.fld select,.fld input[type=text]{font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:14px}
+.projbox{display:flex;flex-direction:column;gap:10px;margin-top:8px;padding:12px;border:1px solid var(--claude-line);border-radius:12px;background:var(--claude-soft)}
+.rootbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--panel);font-size:13.5px;margin-bottom:10px}
+.rootbar.ex{border-color:var(--claude-line);background:var(--claude-soft)}.rootbar.moved{border-color:#efe0b4;background:var(--warn-soft)}
+.rootbar .files{font-weight:600}
+.primary{background:var(--codex);color:#fff;border-color:var(--codex);font-size:16px;font-weight:700;padding:10px 26px;border-radius:12px}
+.primary:hover{filter:brightness(1.07)}.primary:disabled{opacity:.45;cursor:not-allowed}
+.danger{color:var(--bad);border-color:#efc9c4}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.err{color:var(--bad);font-size:14px;white-space:pre-wrap}
+.confirm{border:2px solid var(--codex-line);border-radius:16px;background:var(--panel);padding:16px;display:flex;flex-direction:column;gap:10px}
+.kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:6px 12px;font-size:14px}.kv .k{color:var(--muted)}
+.risk{background:var(--warn-soft);border:1px solid #efe0b4;border-radius:10px;padding:10px 12px;font-size:14px}
+.recent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.recent a{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);text-decoration:none;font-size:14px}
+.recent a:hover{border-color:#bdb9b0}.recent .small{white-space:nowrap}
+.appbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.perm{border:2px solid var(--human);background:var(--human-soft);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.perm .item{background:var(--panel);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.goal{display:flex;flex-direction:column;gap:6px;font-size:13px}.goal .crit{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.goal .crit li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px}.goal .bar{height:6px;border-radius:4px;background:var(--soft);overflow:hidden}
+.goal .bar i{display:block;height:100%;background:var(--codex)}
+.budget{border:2px solid var(--warn);background:var(--warn-soft);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.seg2{display:flex;gap:8px;flex-wrap:wrap}.seg2 label{display:flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 12px;background:var(--panel);font-size:14px}
+.filesbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.ov{background:var(--panel);border:1px solid var(--line);border-inline-start:5px solid var(--muted);border-radius:16px;box-shadow:var(--shadow);padding:14px 18px;display:grid;gap:10px}
+.ov.t-live{border-inline-start-color:var(--info)}.ov.t-need{border-inline-start-color:var(--warn);background:linear-gradient(270deg,var(--warn-soft),var(--panel) 60%)}
+.ov.t-ok{border-inline-start-color:var(--ok)}.ov.t-mid{border-inline-start-color:var(--codex)}.ov.t-bad{border-inline-start-color:var(--bad)}
+.ov .oh{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}.ov .ot{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.ov .os{color:var(--muted)}.ov .ofacts{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--muted);font-size:13.5px}
+.ov .ofacts .bar{width:110px;display:inline-block;vertical-align:middle;margin-inline-start:6px}
+.ov .oai{background:var(--soft);border-radius:12px;padding:10px 13px;display:grid;gap:6px}
+.ov .oai .lbl{font-size:12.5px;color:var(--muted)}.ov .oai .bl{font-weight:600;line-height:1.55}
+.ov .onext{border-inline-start:3px solid var(--codex);padding:2px 10px}
+.ov .osince{border-top:1px dashed var(--line);padding-top:8px}.ov .osince ul{margin:4px 0 0;padding-inline-start:20px}
+.ov .olinks{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.ov .dot{width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block}
+.ov.t-live .dot{background:var(--info);animation:pulse 1.6s infinite}.ov.t-need .dot{background:var(--warn)}.ov.t-ok .dot{background:var(--ok)}.ov.t-bad .dot{background:var(--bad)}.ov.t-mid .dot{background:var(--codex)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}@media (prefers-reduced-motion:reduce){.ov.t-live .dot{animation:none}}
+.dec{display:grid;gap:8px}.dec .why{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.dec .opt{display:grid;gap:2px}.dec .opt .small{margin-inline-start:2px}
+.recent .needs{color:var(--warn);font-weight:700}
+.cont{border:1px solid var(--codex-line);background:var(--panel);border-radius:14px;padding:14px 16px;display:grid;gap:10px;box-shadow:var(--shadow)}
+.cont .bud{display:grid;gap:3px;background:var(--soft);border-radius:10px;padding:9px 12px}
+.cont textarea{width:100%;min-height:110px;resize:vertical;font:inherit;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--panel);color:var(--ink)}
+.cont .ext{display:flex;flex-wrap:wrap;gap:6px 14px}.cont .ext label{display:flex;gap:6px;align-items:center}
+.cont ul{margin:0;padding-inline-start:20px}.recent .kind{color:var(--muted)}
+.attn{border:2px solid var(--warn);background:var(--warn-soft);border-radius:14px;padding:10px 14px;display:grid;gap:6px}
+.sumcard{background:var(--panel);border:1px solid var(--codex-line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.sumcard>summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:12px 16px;background:linear-gradient(270deg,var(--codex-soft),var(--panel))}
+.sumcard>summary::-webkit-details-marker{display:none}
+.sumcard>summary .ttl{font-weight:700;font-size:16.5px}
+.sumcard>summary .ttl::before{content:"▸ ";color:var(--muted)}.sumcard[open]>summary .ttl::before{content:"▾ "}
+.sumcard .sbody{padding:6px 16px 14px;display:grid;gap:10px}
+.sumcard h4{margin:4px 0 2px;font-size:13.5px;color:var(--muted);font-weight:700}
+.sumcard ul{margin:0;padding-inline-start:20px}.sumcard li{margin:2px 0}
+.sumcard .bl{background:var(--soft);border-radius:12px;padding:10px 13px;font-weight:600;line-height:1.55}
+.sumcard .nx{border-inline-start:3px solid var(--codex);padding:4px 10px}
+.sumcard .stale{color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:8px 12px}
+.sumcard .facts{border-top:1px dashed var(--line);padding-top:8px}
+.sumcard .sg-v{color:var(--ok);font-weight:700}.sumcard .sg-u{color:var(--warn);font-weight:700}.sumcard .sg-h{color:var(--info);font-weight:700}
+@media (max-width:640px){.roles,.grid2{grid-template-columns:1fr}.kv{grid-template-columns:1fr}.hero h2{font-size:24px}}
+.tbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:14px;font-size:13.5px;color:var(--muted)}
+.tbar label{display:inline-flex;gap:5px;align-items:center}
+.tlist{display:flex;flex-direction:column;gap:10px}
+.tmsg{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.tmsg.m-codex{border-inline-start:4px solid var(--codex)}.tmsg.m-claude{border-inline-start:4px solid var(--claude)}.tmsg.m-orchestrator,.tmsg.m-user,.tmsg.m-harness{border-inline-start:4px solid #a7a39a}
+.th{direction:ltr;text-align:left;font:12.5px/1.5 ui-monospace,Consolas,monospace;color:#3f4652;display:flex;flex-wrap:wrap;gap:4px 14px}
+.th b{color:var(--ink)}
+.tbtns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.tbtns button{font-size:12px;padding:2px 10px}
+.tev{display:flex;gap:10px;align-items:baseline;font-size:13px;color:var(--muted);padding:4px 6px;border-radius:8px;flex-wrap:wrap}
+.tev .th{color:var(--muted)}
+.tev.meta{background:var(--info-soft)}.tev.act{font-style:italic}
+footer{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+footer div{max-width:1240px;margin:0 auto;padding:6px 20px;display:flex;gap:14px;flex-wrap:wrap}
+.cdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#b8b4ab;margin-inline-end:6px}.conn-ok .cdot{background:var(--ok)}.conn-down .cdot{background:var(--bad)}
+@media (max-width:1000px){.layout{grid-template-columns:1fr;padding:14px 12px 24px;gap:14px}aside{position:static;order:-1}.turn{max-width:100%}aside .side-extra{display:none}footer{position:static}footer .fx{display:none}#sideBtn{display:none}.layout.noside aside{display:flex}}
+@media (max-width:560px){body{font-size:15px}.av{width:28px;height:28px;font-size:10.5px}.bub{padding:10px 12px}.seg button{padding:5px 10px}.tools{width:100%}.tools #taskSel{flex:1 1 100%;width:100%;max-width:100%}.ev li{grid-template-columns:20px minmax(0,1fr)}.ev li .v{grid-column:2}.say .tx{font-size:15.5px}}
+@media (max-width:1000px){.layout>aside#side{order:2}}
+@media (max-width:560px){#replayBtn,#speed{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand"><div class="pair" aria-hidden="true"><span class="cx">CX</span><span class="cl">CL</span></div>
+    <div class="ttl"><h1 id="title">שיחת Codex ו-Claude</h1><div class="sub">Codex — מנהל ומבקר · Claude — מבצע</div></div></div>
+  <div class="seg" role="group" aria-label="מצב תצוגה">
+    <button id="modeConv" aria-pressed="true">תצוגת שיחה</button><button id="modeTech" aria-pressed="false">תצוגה טכנית</button></div>
+  <div class="tools">
+    <button id="homeBtn" hidden title="משימה חדשה ושיחות קודמות">בית · משימה חדשה</button>
+    <select id="taskSel" aria-label="בחירת שיחה"></select>
+    <button id="replayBtn" title="ניגון מחדש של ההודעות שנשמרו">&#9654; הפעלה חוזרת</button>
+    <select id="speed" aria-label="מהירות ההפעלה החוזרת"><option value="1600">איטי</option><option value="700" selected>רגיל</option><option value="200">מהיר</option></select>
+    <button id="sideBtn" aria-pressed="false" aria-controls="side" title="הצגה או הסתרה של פאנל המצב">פאנל מצב</button>
+  </div>
+</div></header>
+<div class="layout" id="layout"><main id="main"><div class="empty">טוען...</div></main><aside id="side" aria-live="polite" aria-label="מצב השיחה"></aside></div>
+<footer><div><span id="conn"><span class="cdot"></span><span id="connText">מתחבר לשרת המקומי...</span></span><span class="fx">קריאה בלבד · 127.0.0.1 בלבד · מוצג בדיוק מה שנשמר (סודות מוסתרים)</span></div></footer>
+<script nonce="__NONCE__">
+"use strict";
+const TOKEN = "__TOKEN__";
+const CSRF = "__CSRF__", APP = "__APP__" === "1";  /* APP: the local app server allows task actions (POST, CSRF-protected) */
+const qs = new URLSearchParams(location.search);
+let taskId = qs.get("task");
+const S = {messages: [], activity: [], events: [], attachments: [], status: null, lastSeq: 0, lastE: 0, tasks: []};
+const UI = {mode: "conv", side: true, open: new Set(), replay: null, connected: false, errors: 0, filters: {msg: true, sys: true, act: true, meta: true}, queued: false};
+try { const m = localStorage.getItem("orchViewerMode"); if (m === "tech" || m === "conv") UI.mode = m; if (localStorage.getItem("orchViewerSide") === "0") UI.side = false; } catch (e) {}
+const $ = id => document.getElementById(id);
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) { if (v == null) continue; if (k === "class") e.className = v; else if (k === "text") e.textContent = v; else e.setAttribute(k, v); }
+  for (const k of kids) if (k != null && k !== false) e.append(k);
+  return e;
+}
+const api = (p, extra) => fetch(p + (p.includes("?") ? "&" : "?") + "t=" + encodeURIComponent(TOKEN) + (extra || ""), {cache: "no-store"}).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+const objCache = new WeakMap();
+function obj(m) { if (!objCache.has(m)) { let o = null; try { o = JSON.parse(m.content); } catch (e) {} objCache.set(m, o && typeof o === "object" && !Array.isArray(o) ? o : null); } return objCache.get(m); }
+function fmtTime(ts) { const d = new Date(ts); return isNaN(d) ? (ts || "") : d.toLocaleTimeString("he-IL", {hour: "2-digit", minute: "2-digit", second: "2-digit"}); }
+function fmtDate(ts) { const d = typeof ts === "number" ? new Date(ts * 1000) : new Date(ts); return isNaN(d) ? (ts || "") : d.toLocaleString("he-IL", {dateStyle: "short", timeStyle: "short"}); }
+const iso = s => "⁨" + s + "⁩";  /* bidi isolate for English titles inside Hebrew text */
+
+/* ---------- fixed Hebrew labels (deterministic; never a translation of model text) ---------- */
+const AG = {codex: {name: "Codex", role: "מנהל ומבקר", mono: "CX"}, claude: {name: "Claude", role: "מבצע", mono: "CL"}};
+const KEY = {plan: "תוכנית", acceptance_criteria: "קריטריוני קבלה", instruction: "ההוראה הראשונה ל-Claude", summary: "סיכום של Claude",
+  explanation: "הסבר", changed_files: "קבצים ששונו (לפי הדיווח של Claude)", commands_run: "פקודות שהורצו (לפי הדיווח של Claude — לא מאומת)",
+  remaining_issues: "בעיות פתוחות", findings: "ממצאים", next_instruction: "ההוראה הבאה ל-Claude", question: "שאלה אליך",
+  code: "הקוד", tests: "הבדיקות", session_id: "מזהה שיחה", turns: "סבבי עבודה פנימיים", files: "קבצים מוצעים", notes: "הערות"};
+const CODE_LABEL = {code: "קוד מוצע — לא הורץ", tests: "בדיקות מוצעות — לא הורצו", content: "תוכן קובץ מוצע — לא הורץ"};
+const CODE_KIND = {code: "code", files: "code", content: "code", tests: "tests"};
+const HIDE_IN_CONV = new Set(["verdict", "user_summary_he", "session_id", "turns"]);
+const VERDICT = {COMPLETE: ["אושר בביקורת", "c-approve"], CONTINUE: ["Codex ביקש סבב נוסף", "c-warn"], HUMAN_REQUIRED: ["נדרשת החלטה שלך", "c-human"], FAILED: ["נדחה", "c-bad"]};
+const PHASE = {planner: ["codex", "Codex מכין תוכנית עבודה", "Codex קורא את המשימה ומחליט מה Claude צריך לעשות."],
+  executor: ["claude", "Claude עובד על הקוד", "Claude מבצע את ההוראה של Codex."],
+  apply: ["sys", "המערכת בודקת וכותבת את הקבצים", "המערכת בודקת את הקבצים ש-Claude הציע וכותבת רק קבצים מורשים לסביבת העבודה המבודדת."],
+  static_check: ["sys", "המערכת בודקת את הקבצים (בלי להריץ)", "המערכת קוראת את הקבצים שנכתבו, משווה אותם להצעה ובודקת תחביר — בלי להריץ את הקוד."],
+  verification: ["sys", "המערכת מריצה בדיקות", "המערכת מריצה את הבדיקות האוטומטיות של הפרויקט על הקוד."],
+  reviewer: ["codex", "Codex בודק את העבודה", "Codex בודק את מה ש-Claude עשה ומחליט אם לאשר או לבקש תיקון."]};
+const STEPS = [[["planner"], "תכנון"], [["executor"], "ביצוע"], [["apply"], "כתיבה"], [["verification", "static_check"], "בדיקות"], [["reviewer"], "ביקורת"]];
+const STATUS_HE = {COMPLETE: "הושלם", COMPLETED: "הושלם", FAILED: "נכשל", RUNNING: "רץ", HUMAN_REQUIRED: "ממתין להחלטה", PAUSED: "מושהה", STOPPED: "נעצר", STOPPED_ON_ERROR: "נעצר בשגיאה", WAITING: "ממתין", ENDED: "הסתיים", AWAITING_OWNER: "ממתין לאישורך", INCONCLUSIVE: "לא חד-משמעי — אין מספיק ראיות למסקנה", NEEDS_REVISION: "נדרש תיקון נוסף — לא אושר", BLOCKED: "חסום — בעיה חיצונית (התחברות, מכסה או הגדרות)"};
+const RS = {active: ["ריצה פעילה", "הסוכנים עובדים כעת. הודעות חדשות יופיעו כאן אוטומטית, ברגע שהן מתקבלות במלואן.", "st-live"],
+  saved: ["שיחה שמורה", "השיחה הסתיימה בעבר. הסוכנים אינם פועלים כעת — מוצגות ההודעות שנשמרו.", "st-saved"],
+  interrupted: ["שיחה שמורה — הריצה נקטעה", "הריצה הופסקה לפני שהסתיימה. הסוכנים אינם פועלים כעת.", "st-warn"],
+  waiting: ["ממתין לתחילת הריצה", "ההודעה הראשונה תופיע כאן כשהמשימה תתחיל.", "st-saved"],
+  awaiting_owner: ["ממתין לאישור המשתמש להתחלת הניסוי", "אף סוכן AI לא הופעל עדיין. הניסוי יתחיל רק אחרי אישור מפורש שלך.", "st-warn"]};
+const REPLAY_RS = ["הפעלה חוזרת", "מנגן מחדש הודעות שהוקלטו בעבר. הסוכנים אינם פועלים.", "st-replay"];
+const ICON = {good: "✓", yes: "✓", approve: "✓", bad: "✗", no: "—", warn: "!", human: "?"};
+const isMock = () => !!(S.status && S.status.is_mock);
+const mockPrefix = (t, mock) => (mock && !t.startsWith("MOCK") ? "MOCK · " : "") + t;
+
+/* ---------- small building blocks ---------- */
+const keyOf = (...p) => p.join(":");
+function toggleBtn(label, altLabel, key, target) {
+  const b = h("button", {type: "button", "aria-expanded": String(UI.open.has(key)), text: UI.open.has(key) ? altLabel : label});
+  target.hidden = !UI.open.has(key);
+  b.onclick = () => { const on = !UI.open.has(key); on ? UI.open.add(key) : UI.open.delete(key); target.hidden = !on; b.textContent = on ? altLabel : label; b.setAttribute("aria-expanded", String(on)); };
+  return b;
+}
+async function copyText(t, btn) {
+  try { await navigator.clipboard.writeText(t); } catch (e) { const a = h("textarea", {}); a.value = t; document.body.append(a); a.select(); try { document.execCommand("copy"); } catch (e2) {} a.remove(); }
+  const o = btn.textContent; btn.textContent = "הועתק"; setTimeout(() => { btn.textContent = o; }, 1100);
+}
+function copyBtn(t, label) { const b = h("button", {type: "button", text: label || "העתק"}); b.onclick = () => copyText(t, b); return b; }
+function codeBlock(label, text, key) {
+  const pre = h("pre", {dir: "ltr", text: text});
+  const long = text.split("\n").length > 16 || text.length > 1400;
+  const btns = h("div", {class: "btns"}, copyBtn(text));
+  if (long) {
+    const open = UI.open.has(key); pre.classList.toggle("cut", !open);
+    const ex = h("button", {type: "button", text: open ? "צמצם" : "הצג הכל"});
+    ex.onclick = () => { const on = !UI.open.has(key); on ? UI.open.add(key) : UI.open.delete(key); pre.classList.toggle("cut", !on); ex.textContent = on ? "צמצם" : "הצג הכל"; };
+    btns.append(ex);
+  }
+  return h("div", {class: "code"}, h("div", {class: "code-h"}, h("span", {class: "cl", text: label}), btns), pre);
+}
+function textNode(s) { return h("div", {class: "text", dir: "auto", text: s}); }
+function valueNode(k, v, mkey) {
+  if (typeof v === "string") {
+    if (CODE_LABEL[k] || /\n.*\n/.test(v) && /^(def |class |import |from |\s{4})/m.test(v)) return codeBlock(CODE_LABEL[k] || "קוד", v, mkey);
+    return textNode(v);
+  }
+  if (Array.isArray(v)) {
+    if (!v.length) return h("div", {class: "text", text: "—"});
+    if (v.every(x => typeof x === "string")) return h("ul", {}, ...v.map(x => h("li", {dir: "auto", class: "text", text: x})));
+    if (k === "files") return h("div", {}, ...v.map((f, i) => f && typeof f === "object" ? h("div", {class: "field"}, h("div", {class: "files", text: String(f.path || "")}), codeBlock(CODE_LABEL.content, String(f.content || ""), mkey + ":" + i)) : textNode(JSON.stringify(f))));
+  }
+  if (v === null || typeof v !== "object") return h("div", {class: "files", text: JSON.stringify(v)});
+  return codeBlock("JSON", JSON.stringify(v, null, 2), mkey);
+}
+function fieldsOf(o, m, skip) {
+  const out = [];
+  for (const [k, v] of Object.entries(o)) {
+    if (skip && skip.has(k)) continue;
+    if (typeof v === "string" && !v.trim()) continue;
+    out.push(h("div", {class: "field"}, h("div", {class: "label", text: KEY[k] || k}), valueNode(k, v, keyOf("m", m.seq, k))));
+  }
+  return out;
+}
+function rawPanel(m) {
+  return h("div", {class: "raw"}, h("div", {class: "rl"}, h("span", {text: "ההודעה המקורית המדויקת, כפי שנשמרה"}), copyBtn(m.content, "העתק מקור")), h("pre", {dir: "auto", text: m.content}));
+}
+function stamp(m) { return h("span", {class: "tm", title: m.ts, text: fmtTime(m.ts) + (m.cycle ? " · סבב " + m.cycle : "")}); }
+
+/* ---------- agent-written Hebrew summary (optional field) vs. deterministic system description ---------- */
+function summaryHe(o) { const s = o && o.user_summary_he; return typeof s === "string" && s.trim() && s.length <= 1500 ? s : null; }
+function explain(agent, o, desc) {
+  const s = summaryHe(o), nm = AG[agent].name;
+  if (s) return h("div", {class: "say"}, h("div", {class: "lbl", text: isMock() ? "תקציר בעברית — MOCK: נכתב מראש לדוגמה, לא ע״י מודל" : "תקציר בעברית שכתב " + nm + " בעצמו (ההודעה המקורית זמינה למטה)"}), h("div", {class: "tx text", dir: "rtl", text: s}));
+  return h("div", {class: "sysdesc"}, h("div", {class: "lbl", text: "תיאור המערכת · לא נכתב ע״י " + nm}), h("div", {class: "tx", text: desc}));
+}
+function lastVer(msgs, c) { const v = msgs.filter(m => m.kind === "verification" && (c == null || m.cycle === c)).map(m => (obj(m) || {}).verification).filter(Boolean); return v[v.length - 1] || null; }
+function verShort(v) {
+  if (!v) return null;
+  if (v.mode === "research") return v.status === "research_passed" ? ["yes", "הדוח נבדק (מבנה בלבד)"] : v.status === "research_missing" ? ["no", "אין עדיין דוח"] : ["warn", "לדוח חסר מבנה בסיסי"];
+  if (v.status === "not_run") return ["no", v.mode === "static" ? "לא נבדק — לא נכתב קובץ" : "הבדיקות לא הורצו"];
+  if (v.mode === "static") return v.passed ? ["yes", "בדיקה סטטית עברה (ללא הרצה)"] : ["bad", "בדיקה סטטית נכשלה"];
+  if (v.status === "passed") return ["good", "בדיקות הורצו ועברו"];
+  return ["bad", "בדיקות הורצו ונכשלו"];
+}
+function applyRec(msgs, c) { const a = msgs.filter(x => x.kind === "file_apply" && x.cycle === c).map(obj).filter(Boolean); return a[a.length - 1] || null; }
+function applyClause(msgs, c) {
+  const a = applyRec(msgs, c);
+  if (a) return a.status === "applied" ? " המערכת בדקה את ההצעה וכתבה את הקבצים לסביבת העבודה — הקוד עצמו לא הורץ." : a.status === "rejected" ? " המערכת דחתה את ההצעה ולא כתבה אף קובץ." : " הכתיבה נכשלה והמערכת ביטלה את כל השינויים.";
+  return lastVer(msgs, c) ? "" : " המערכת לא כתבה את הקוד לפרויקט ולא הריצה אותו בסבב זה.";
+}
+function describe(m, msgs) {
+  const o = obj(m) || {};
+  if (m.kind === "plan") { const n = Array.isArray(o.acceptance_criteria) ? o.acceptance_criteria.length : 0; return "Codex הכין תוכנית עבודה עם " + n + " קריטריוני קבלה, וניסח את ההוראה הראשונה ל-Claude."; }
+  if (m.kind === "instruction") {
+    if (!(m.cycle > 1)) return "Codex שלח ל-Claude את ההוראה לסבב " + (m.cycle || 1) + ".";
+    const prevReview = msgs.some(x => x.kind === "review" && x.cycle === m.cycle - 1 && (obj(x) || {}).verdict === "CONTINUE");
+    return prevReview ? "Codex שלח ל-Claude הוראת תיקון לסבב " + m.cycle + "." : "ההוראה הקודמת של Codex נשלחה שוב ל-Claude לסבב " + m.cycle + " (הסבב הקודם לא הושלם, ו-Codex לא בדק אותו).";
+  }
+  if (m.kind === "report") {
+    const parts = [], code = ["code", "files", "content"].some(k => o[k]), tests = typeof o.tests === "string" && o.tests.trim();
+    if (code || tests) parts.push("Claude החזיר " + (code ? "הצעת קוד" : "") + (code && tests ? " ו" : "") + (tests ? "בדיקות מוצעות" : "") + " כטקסט." + applyClause(msgs, m.cycle));
+    if (Array.isArray(o.changed_files) && o.changed_files.length) parts.push("Claude מדווח ששינה " + o.changed_files.length + " קבצים. זהו דיווח של Claude — המערכת בודקת בנפרד מה השתנה בפועל.");
+    if (Array.isArray(o.remaining_issues) && o.remaining_issues.length) parts.push("Claude ציין " + o.remaining_issues.length + " בעיות פתוחות.");
+    return parts.join(" ") || "Claude החזיר תשובה.";
+  }
+  if (m.kind === "review") {
+    const v = lastVer(msgs, m.cycle), vs = verShort(v);
+    if (o.verdict === "COMPLETE") return "Codex אישר את העבודה" + (vs && vs[0] === "good" ? " — לאחר שהבדיקות האוטומטיות הורצו ועברו." : v && v.mode === "static" ? " — על סמך בדיקה סטטית בלבד; הקוד לא הורץ." : v ? "." : " — על סמך קריאת ההצעה בלבד; שום קוד לא הורץ.");
+    if (o.verdict === "CONTINUE") return "Codex לא אישר עדיין, וביקש מ-Claude תיקון" + (vs && vs[0] === "bad" ? " אחרי שהבדיקות נכשלו." : ".");
+    if (o.verdict === "HUMAN_REQUIRED") return "Codex עצר וממתין להחלטה שלך.";
+    if (o.verdict === "FAILED") return "Codex קבע שהמשימה לא הושלמה.";
+  }
+  return "";
+}
+
+/* ---------- conversation items ---------- */
+function agentTurn(agent, what, m, msgs, chips, opts) {
+  opts = opts || {};
+  const o = obj(m), hasSum = !!summaryHe(o), btns = [], panels = [];
+  const body = [explain(agent, o, describe(m, msgs))];
+  const srcs = o && Array.isArray(o.sources) ? o.sources : [];
+  if (srcs.length) body.push(h("div", {class: "orig"}, h("div", {class: "lbl", text: "מקורות מהרשת שדווחו (" + srcs.length + ") — זמן אחזור · כתובת · שימוש"}),
+    h("ul", {class: "flist", dir: "ltr"}, ...srcs.slice(0, 30).map(x => h("li", {class: "files", text: (x.retrieved_at || "?") + "  " + (x.url || "") + (x.used_for ? "  — " + x.used_for : "")})))));
+  const wsq = ((m.meta || {}).web_searches || []).map(x => x.query).filter(Boolean);
+  if (wsq.length) body.push(h("div", {class: "small", text: "Codex חיפש ברשת: " + wsq.join(" · ")}));
+  if (o) for (const kind of ["code", "tests"]) {
+    const ent = Object.entries(o).filter(([k, v]) => CODE_KIND[k] === kind && v != null && v !== "" && !(Array.isArray(v) && !v.length));
+    if (!ent.length) continue;
+    const p = h("div", {class: "panel"}, ...ent.map(([k, v]) => valueNode(k, v, keyOf("m", m.seq, k))));
+    btns.push(toggleBtn(kind === "code" ? "הצג קוד" : "הצג בדיקות", kind === "code" ? "הסתר קוד" : "הסתר בדיקות", keyOf(kind, m.seq), p)); panels.push(p);
+  }
+  const skip = new Set([...HIDE_IN_CONV, ...Object.keys(CODE_KIND)]);
+  const tf = o ? fieldsOf(o, m, skip) : [h("div", {class: "text" + (m.content.length > 320 && !UI.open.has(keyOf("full", m.seq)) ? " clamp" : ""), dir: "auto", text: m.content})];
+  if (opts.fieldsBtn && tf.length) { const p = h("div", {class: "orig"}, ...tf); btns.push(toggleBtn(opts.fieldsBtn[0], opts.fieldsBtn[1], keyOf("fields", m.seq), p)); panels.push(p); }
+  else if (tf.length && !hasSum) {
+    const lb = h("div", {class: "lbl", text: o ? "מה כתב " + AG[agent].name + " (הטקסט המקורי)" : "הטקסט המקורי המדויק"});
+    const box = h("div", {class: "orig"}, lb, ...tf); body.push(box);
+    if (!o && m.content.length > 320) { const t = tf[0], b = h("button", {class: "linkbtn", type: "button", text: UI.open.has(keyOf("full", m.seq)) ? "הצג פחות" : "הצג הכל"}); b.onclick = () => { const k = keyOf("full", m.seq), on = !UI.open.has(k); on ? UI.open.add(k) : UI.open.delete(k); t.classList.toggle("clamp", !on); b.textContent = on ? "הצג פחות" : "הצג הכל"; }; box.append(b); }
+  }
+  if (o) { const p = h("div", {class: "panel"}, ...(hasSum && !opts.fieldsBtn && tf.length ? [h("div", {class: "orig"}, ...tf)] : []), rawPanel(m)); btns.push(toggleBtn("הודעה מקורית", "הסתר הודעה מקורית", keyOf("raw", m.seq), p)); panels.push(p); }
+  else btns.push(copyBtn(m.content, "העתק"));
+  if (opts.prompt) { const p = h("div", {class: "raw"}, h("div", {class: "rl"}, h("span", {text: "הפרומפט המלא שנמסר ל-Claude (כולל מסגרת שהוסיפה המערכת)"}), copyBtn(opts.prompt)), h("pre", {dir: "auto", text: opts.prompt})); btns.push(toggleBtn("הפרומפט המלא", "הסתר פרומפט", keyOf("prompt", m.seq), p)); panels.push(p); }
+  const a = AG[agent];
+  return h("div", {class: "turn " + agent, "data-seq": m.seq},
+    h("div", {class: "av", "aria-hidden": "true", text: a.mono}),
+    h("div", {class: "bub"}, h("div", {class: "bh"}, h("span", {class: "nm", text: a.name}), h("span", {class: "what", text: what}), ...(chips || [])),
+      ...body, h("div", {class: "bf"}, stamp(m), ...btns), ...panels));
+}
+function sysRow(cls, title, m, details, small) {
+  const kids = [h("div", {class: "sh"}, h("span", {class: "chip " + ({ok: "c-ok", bad: "c-bad", static: "c-info", warn: "c-warn", human: "c-human"}[cls] || "c-muted"), text: title}),
+    m ? h("span", {class: "small", title: m.ts, text: fmtTime(m.ts) + (m.cycle ? " · סבב " + m.cycle : "")}) : null)];
+  if (small) kids.push(small);
+  const btns = [], panels = [];
+  if (details) { const p = h("div", {class: "panel"}, details); btns.push(toggleBtn("פרטים", "הסתר פרטים", keyOf("sys", m && m.seq), p)); panels.push(p); }
+  if (m) { const p = rawPanel(m); btns.push(toggleBtn("הודעה מקורית", "הסתר הודעה מקורית", keyOf("raw", m.seq), p)); panels.push(p); }
+  if (btns.length) kids.push(h("div", {class: "bf"}, ...btns), ...panels);
+  return h("div", {class: "sys " + (cls || ""), "data-seq": m ? m.seq : null}, ...kids);
+}
+function verInfo(m) {
+  const o = obj(m), v = o && o.verification || {};
+  if (v.mode === "research") return v.status === "research_passed" ? ["static", "הדוח קיים, עם מקורות מתוארכים ושורת החלטה (" + v.verdict + ") — המערכת בדקה מבנה בלבד, לא את נכונות התוכן", "המערכת בדקה את מבנה הדוח ושיש בו ראיות — לא את נכונות המסקנה."]
+    : ["bad", v.status === "research_missing" ? "דוח המחקר עדיין לא נכתב" : "דוח המחקר אינו מלא", v.output_tail || ""];
+  const n = v.tests_ran != null ? " (" + v.tests_ran + " בדיקות)" : "";
+  if (v.status === "not_run") return ["warn", "הבדיקה לא הורצה", v.mode === "static" ? "לא נכתב אף קובץ, ולכן לא היה מה לבדוק." :
+    "הצעד של Claude לא הושלם, ולכן המערכת לא הריצה את הבדיקות. קבצים שהשתנו (אם יש) מופיעים כאן — הם לא נבדקו."];
+  if (v.mode === "static") return v.passed ? ["static", "בדיקה סטטית עברה — הקוד לא הורץ", "המערכת קראה את הקבצים שנכתבו, וידאה שהם זהים להצעה ובדקה תחביר — בלי להריץ את הקוד."] : ["bad", "בדיקה סטטית נכשלה — הקוד לא הורץ", "המערכת קראה את הקבצים שנכתבו ובדקה אותם בלי להריץ, ומצאה בעיה."];
+  if (v.status === "timeout") return ["bad", "הבדיקות הורצו וחרגו מזמן", "הבדיקות לא הסתיימו בזמן המוקצב."];
+  if (v.status === "passed") return ["ok", "בדיקות הורצו ועברו" + n, "המערכת הריצה בעצמה את הבדיקות של הפרויקט על הקוד שנכתב, והן עברו."];
+  if (v.status === "no_test_evidence") return ["bad", "הבדיקות הורצו, אך לא נמצאה ראיה למספר הבדיקות", ""];
+  return ["bad", "בדיקות הורצו ונכשלו" + n, "המערכת הריצה בעצמה את הבדיקות של הפרויקט על הקוד שנכתב, והן נכשלו."];
+}
+function convItem(m, msgs) {
+  const o = obj(m);
+  if (m.kind === "plan") return agentTurn("codex", "תוכנית העבודה", m, msgs, [], {fieldsBtn: ["הצג את התוכנית", "הסתר את התוכנית"]});
+  if (m.kind === "instruction") {
+    const prompt = m.meta && m.meta.delivered_prompt;
+    if (m.sender === "codex") return agentTurn("codex", "הוראות ל-Claude", m, msgs, [], {prompt: prompt});
+    const who = m.sender === "harness" ? "הוראת בדיקה ל-Claude (נכתבה ע״י רתמת הבדיקה, לא ע״י Codex)" : "הוראה אוטומטית ל-Claude (נכתבה ע״י המערכת, לא ע״י Codex)";
+    const r = sysRow("warn", who, m, prompt ? h("div", {}, h("div", {class: "label", text: "הפרומפט המלא שנמסר ל-Claude"}), h("pre", {dir: "auto", text: prompt})) : null, textNode(m.content));
+    return r;
+  }
+  if (m.kind === "report" && m.sender === "claude") {
+    const chips = o && ["code", "files", "content"].some(k => o[k]) ? [h("span", {class: "chip c-warn", text: "קוד מוצע — לא הורץ"})] : [];
+    return agentTurn("claude", "הפתרון של Claude", m, msgs, chips);
+  }
+  if (m.kind === "verification") {
+    const [cls, title, expl] = verInfo(m), v = o && o.verification || {};
+    const cd = o && (o.cumulative_diff || o.diff), parts = [];
+    if (expl) parts.push(h("div", {text: expl}));
+    if (cd) { const f = ["added", "modified", "deleted"].flatMap(k => (cd[k] || []).map(p => ({added: "+ ", modified: "~ ", deleted: "− "}[k] + p))); if (f.length) parts.push(h("div", {class: "small", text: "קבצים שהשתנו בפרויקט (נמדד ע״י המערכת): "}, h("span", {class: "files", text: f.join("   ")}))); }
+    const det = [];
+    if (v.command) det.push(h("div", {class: "label", text: "הפקודה שהמערכת הריצה"}), h("div", {class: "files", text: Array.isArray(v.command) ? v.command.join(" ") : String(v.command)}));
+    if (v.output_tail) det.push(h("div", {class: "field"}, codeBlock("פלט הבדיקה", v.output_tail, keyOf("m", m.seq, "out"))));
+    if (Array.isArray(v.files)) det.push(...v.files.map((f, i) => codeBlock((f.path || "") + " — " + (f.python_syntax || ""), String(f.content || ""), keyOf("m", m.seq, "f", i))));
+    if (v.mode === "static" && Array.isArray(v.files) && v.files.length) parts.push(h("ul", {class: "flist"}, ...v.files.map(f => h("li", {},
+      h("span", {class: "files", text: f.path}), h("span", {class: f.matches_applied ? "t-yes" : "t-bad", text: !f.exists ? " · חסר בדיסק" : f.matches_applied ? " · זהה להצעה" : " · שונה מההצעה"}),
+      f.python_syntax === "ok" ? h("span", {class: "t-yes", text: " · תחביר Python תקין"}) : f.python_syntax === "not_checked" ? null : f.python_syntax ? h("span", {class: "t-bad", text: " · " + f.python_syntax}) : null))));
+    if (v.required_defs && Object.keys(v.required_defs).length) parts.push(h("div", {class: "small", text: "הגדרות נדרשות: " + Object.entries(v.required_defs).map(([k, ok]) => k + (ok ? " ✓" : " ✗ חסרה")).join(" · ")}));
+    return sysRow(cls, "בדיקה אוטומטית של המערכת: " + title, m, det.length ? h("div", {}, ...det) : null, parts.length ? h("div", {}, ...parts) : null);
+  }
+  if (m.kind === "review" && m.sender === "codex") {
+    const vd = o && VERDICT[o.verdict];
+    return agentTurn("codex", "ביקורת Codex", m, msgs, vd ? [h("span", {class: "chip " + vd[1], text: vd[0]})] : []);
+  }
+  if (m.kind === "file_apply") {
+    const a = o || {}, w = a.written || [], rs = a.reasons || [];
+    const T = {applied: ["ok", "המערכת כתבה " + w.length + (w.length === 1 ? " קובץ" : " קבצים") + " לסביבת העבודה המבודדת"],
+      rejected: ["bad", "ההצעה נדחתה — שום קובץ לא נכתב"], failed: ["bad", "הכתיבה נכשלה — כל השינויים בוטלו"],
+      recovered: ["warn", "שחזור אחרי כתיבה שנקטעה"]}[a.status] || ["warn", "כתיבת קבצים: " + a.status];
+    const parts = [];
+    if (a.status === "applied") parts.push(h("div", {text: "רק נתיבים שאישרת מראש. כל קובץ נכתב בפעולה אטומית ונקרא בחזרה, והתוכן שנכתב זהה להצעה לפי השוואת SHA-256."}),
+      h("ul", {class: "flist"}, ...w.map(f => h("li", {}, h("span", {class: "files", text: f.path}), h("span", {text: " · " + (f.action === "create" ? "נוצר" : "עודכן") + " · " + f.bytes + " בתים"})))));
+    if (rs.length) parts.push(h("div", {class: "label", text: a.status === "recovered" ? "מה נמצא ומה נעשה (כפי שנרשם ע״י המערכת):" : "הסיבות (כפי שנרשמו ע״י המערכת):"}),
+      h("ul", {class: "flist", dir: "ltr"}, ...rs.map(r => h("li", {class: "files", text: r}))));
+    return sysRow(T[0], T[1], m, null, h("div", {}, ...parts));
+  }
+  if (m.kind === "checkpoint") {
+    const c = o || {}, calls = c.calls || {};
+    return sysRow("static", "נקודת התקדמות: " + c.cycles_done + " סבבים — העבודה ממשיכה", m, null,
+      h("div", {text: "זמן עבודה " + c.elapsed_min + " דק׳ · קריאות Codex " + (calls.codex || 0) + " · Claude " + (calls.claude || 0)
+        + " · סבבים עם התקדמות מדידה: " + c.progress_cycles_in_window + "/" + c.window + (c.criteria_total ? " · קריטריונים שהושגו לפי Codex: " + c.criteria_met + "/" + c.criteria_total : "")}));
+  }
+  if (m.kind === "final") return null;
+  if (m.kind === "notice" && /^continuation #\d+ \(single pass\)/.test(m.content)) return sysRow("ok", "תיקון ממוקד אחד", m, null, textNode("Claude מתקן פעם אחת לפי ההנחיות שלך, ואז Codex בודק פעם אחת. שום דבר נוסף לא מתחיל לבד." + (/SAME session/.test(m.content) ? " Claude ממשיך באותה שיחה." : /NEW session/.test(m.content) ? " Claude מתחיל שיחה חדשה עם המשימה המלאה וסיכום." : "")));
+  if (m.kind === "notice" && /^continuation #\d+: /.test(m.content)) return sysRow("ok", "Codex תכנן את ההמשך", m, null, textNode(/SAME session/.test(m.content)
+    ? "Claude ממשיך באותה שיחה — כל ההקשר הקודם שלו נשמר."
+    : /NEW session/.test(m.content) ? "השיחה הקודמת של Claude לא נמצאה, ולכן הוא מתחיל שיחה חדשה עם המשימה המלאה, הקבצים בתיקייה וסיכום של העבודה הקודמת."
+    : "Claude מקבל את המשימה המלאה וסיכום של העבודה הקודמת."));
+  if (m.kind === "notice") return sysRow("bad", /^executor failed/.test(m.content) ? "תקלה: Claude לא השלים את הצעד" : "הודעת מערכת", m, null, textNode(m.content));
+  if (m.kind === "malformed_output") return sysRow("bad", "התשובה של " + (AG[m.sender] ? AG[m.sender].name : m.sender) + " נדחתה בבדיקת הפורמט של המערכת — זו אינה הכרעה על התוכן", m, textNode(m.content),
+      h("div", {text: "התשובה לא עמדה בכללי הפורמט (למשל אורך שדה), ולכן לא שימשה כדיווח. התוכן המדעי לא נשפט ולא הופרך; קבצים שנכתבו נשמרו. התשובה מוצגת כפי שהתקבלה (בכפתור \"פרטים\")."}));
+  if (m.kind === "approval_request") {
+    const perm = /permission_denied/.test(m.content);
+    return sysRow("human", perm ? "Claude ביקש הרשאה שאינה מאושרת מראש — נדרשת החלטה שלך" : "נדרש אישור שלך", m, null,
+      h("div", {}, perm ? h("div", {text: "הפעולה נחסמה ושום דבר לא אושר אוטומטית. אפשר לאשר אותה למשימה הזו בלבד בחלון ההפעלה (או בפקודה allow-tool), ואז אותה שיחה עם Claude ממשיכה."}) : null,
+        h("div", {class: "files text", text: m.content})));
+  }
+  if (m.kind === "approval_decision") return sysRow("human", "ההחלטה שלך", m, null, textNode(m.content));
+  if (m.kind === "control") return sysRow("human", "פקודה ממך", m, null, textNode(m.content));
+  if (m.kind === "continuation") {
+    const c = obj(m) || {}, r = c.remaining || {};
+    return sysRow("human", "המשכת את המשימה" + (c.n > 1 ? " (פעם " + c.n + ")" : ""), m, null,
+      h("div", {}, h("div", {class: "text", dir: "auto", text: c.note ? "ההנחיות שלך: " + c.note : "בלי הנחיות נוספות — הסוכנים ימשיכו את העבודה שלא הושלמה."}),
+        h("div", {class: "small", text: "נותרו בתקציב: " + r.minutes + " דק׳ · Codex " + r.codex + " פניות · Claude " + r.claude + " פניות" + (c.extension ? " (כולל התוספת שאישרת)" : "")})));
+  }
+  return sysRow("", m.kind, m, null, textNode(m.content));
+}
+
+/* ---------- evidence-based outcome: a step is marked done only when the record proves it ---------- */
+function reviewFailed() { return !!(S.status && /^(review_failed|reviewer_error)/.test(S.status.stop_reason || "") && S.status.run_state !== "active"); }
+function currentFinal(msgs) {  /* an earlier end (e.g. a recovered failure) is not the result of a task that continued after it */
+  const fin = [...msgs].reverse().find(m => m.kind === "final");
+  if (!fin) return null;
+  const work = msgs.filter(m => ["instruction", "report", "verification", "review", "plan"].includes(m.kind)).reduce((a, m) => Math.max(a, m.seq || 0), 0);
+  return (fin.seq || 0) >= work ? fin : null;
+}
+function evidence(msgs) {
+  const reports = msgs.filter(m => m.kind === "report" && m.sender === "claude").map(m => obj(m) || {});
+  const vers = msgs.filter(m => m.kind === "verification").map(m => ({c: m.cycle, o: obj(m) || {}}));
+  const exec = vers.filter(x => x.o.verification && x.o.verification.mode !== "static" && x.o.verification.status !== "not_run");
+  const stat = vers.filter(x => x.o.verification && x.o.verification.mode === "static" && x.o.verification.status !== "not_run");
+  const lastCd = vers.length ? (vers[vers.length - 1].o.cumulative_diff || vers[vers.length - 1].o.diff || {}) : {};
+  const written = ["added", "modified", "deleted"].flatMap(k => lastCd[k] || []);
+  const lastExec = exec[exec.length - 1], passed = !!(lastExec && lastExec.o.verification.status === "passed");
+  const failedC = exec.filter(x => x.o.verification.status !== "passed").map(x => x.c);
+  const rv = [...msgs].reverse().find(m => m.kind === "review"), verdict = rv && obj(rv) ? obj(rv).verdict : null;
+  const fin = currentFinal(msgs), finOk = !!(fin && /^(COMPLETE|COMPLETED)\b/.test(fin.content));
+  const res = vers.filter(x => x.o.verification && x.o.verification.mode === "research").map(x => x.o.verification);
+  if (res.length) {
+    const r = res[res.length - 1], secs = Object.entries(r.sections || {});
+    const rows = [["תכנון", msgs.some(m => m.kind === "plan") ? ["yes", "Codex הגדיר מטרה וקריטריונים"] : ["no", "לא בוצע"]],
+      ["דוח מחקר", r.status === "research_missing" ? ["no", "לא נכתב"] : ["yes", "נכתב (" + r.report + ")"]],
+      ["מבנה בסיסי", secs.length && secs.every(([, ok]) => ok) ? ["yes", "מקורות מתוארכים ושורת החלטה קיימים (מבנה בלבד)"] : ["bad", "חסר: " + secs.filter(([, ok]) => !ok).map(([k]) => k).join(", ")]],
+      ["מסקנה (Verdict)", r.verdict ? [r.verdict === "INCONCLUSIVE" ? "warn" : "yes", r.verdict] : ["no", "לא נקבעה"]],
+      ["ביקורת Codex", reviewFailed() ? ["bad", "הביקורת העצמאית נכשלה טכנית — לא בוצע אישור"] : verdict === "COMPLETE" ? ["approve", "Codex אישר את הדוח"] : verdict ? ["warn", VERDICT[verdict] ? VERDICT[verdict][0] : verdict] : ["no", "לא בוצעה"]],
+      ["נכונות הממצאים", ["no", "לא אומתה ע״י המערכת — נבדקו מבנה הדוח וקיום ראיות בלבד"]]];
+    const fs = fin ? fin.content.split(":")[0].trim() : "";
+    const fmt = fin && /malformed_output/.test(fin.content);
+    const big = !fin ? null : fs === "INCONCLUSIVE" ? "המחקר הסתיים ללא מסקנה מבוססת (INCONCLUSIVE)" : finOk ? "דוח המחקר הושלם ואושר — מסקנה: " + r.verdict
+      : fmt ? "נעצר בגלל שגיאת פורמט בתשובה — המחקר והקבצים נשמרו, והתוכן לא נפסל"
+      : reviewFailed() ? "המחקר נכתב, אבל הביקורת העצמאית נכשלה טכנית — אין אישור" : "הסתיים ללא אישור · " + (STATUS_HE[fs] || fs);
+    return {rows, big, cls: fs === "INCONCLUSIVE" ? "review" : finOk ? "static" : "bad", fin};
+  }
+  const proposed = reports.some(o => ["code", "files", "content", "tests"].some(k => o[k])), claimed = reports.some(o => Array.isArray(o.changed_files) && o.changed_files.length);
+  const rows = [];
+  rows.push(["תכנון", msgs.some(m => m.kind === "plan") ? ["yes", "Codex הכין תוכנית עבודה"] : ["no", "לא בוצע"]]);
+  rows.push(["הצעת קוד", proposed ? ["yes", "Claude הציע קוד כטקסט"] : claimed ? ["yes", "Claude דיווח שכתב קבצים (דיווח בלבד)"] : ["no", "לא הוצע קוד"]]);
+  rows.push(["קוד נכתב לפרויקט", written.length ? ["yes", "כן — נמדד ע״י המערכת: " + written.join(", ")] : ["no", vers.length ? "לא נמדד שינוי בקבצים" : "לא — אין ראיה שקוד נכתב לפרויקט"]]);
+  rows.push(["בדיקה סטטית", stat.length ? (stat[stat.length - 1].o.verification.passed ? ["yes", "בוצעה ועברה (ללא הרצת הקוד)"] : ["bad", "בוצעה ונכשלה"]) : ["no", "לא בוצעה"]]);
+  rows.push(["בדיקות אוטומטיות", !exec.length ? ["no", "לא הורצו"] : passed ? ["good", "הורצו ועברו" + (failedC.length ? " (נכשלו קודם בסבב " + failedC.join(", ") + ")" : "")] : ["bad", "הורצו ונכשלו"]]);
+  rows.push(["ביקורת Codex", verdict === "COMPLETE" ? ["approve", "Codex אישר" + (passed ? " — לאחר שהבדיקות עברו" : stat.length ? " — על סמך בדיקה סטטית בלבד" : " — על סמך קריאה בלבד")] : verdict === "CONTINUE" ? ["warn", "Codex ביקש תיקון"] : verdict === "HUMAN_REQUIRED" ? ["human", "Codex ממתין להחלטה שלך"] : verdict === "FAILED" ? ["bad", "Codex דחה"] : ["no", "לא בוצעה"]]);
+  const verified = written.length && passed && finOk;
+  rows.push(["יישום אומת בפועל", verified ? ["good", "כן — הקוד נכתב לפרויקט והבדיקות הורצו ועברו"] : ["no", !written.length ? "לא — הקוד לא נכתב לפרויקט ולא הורץ" : !passed ? "לא — אין הרצת בדיקות שעברה" : "לא — המשימה לא הסתיימה באישור"]]);
+  let big, cls;
+  if (!fin) big = null;
+  else if (!finOk) { cls = "bad"; big = "הסתיים ללא אישור · " + (STATUS_HE[fin.content.split(":")[0].trim()] || fin.content.split(":")[0]); }
+  else if (verified) { cls = "ok"; big = "יושם בפרויקט ואומת — הבדיקות הורצו ועברו"; }
+  else if (stat.length && !exec.length) { cls = "static"; big = "אומת סטטית בלבד — הקוד לא הורץ"; }
+  else if (!vers.length && verdict === "COMPLETE") { cls = "review"; big = "Codex אישר את ההצעה על סמך קריאה בלבד — הקוד לא הורץ ולא אומת"; }
+  else { cls = passed ? "ok" : "review"; big = passed ? "הבדיקות הורצו ועברו" : "הסתיים"; }
+  return {rows, big, cls, fin};
+}
+function resultCard(ev) {
+  if (!ev.fin) return null;
+  return h("section", {class: "result " + ev.cls, "aria-label": "תוצאת המשימה"}, h("div", {class: "label", text: "תוצאת המשימה"}), h("div", {class: "big", text: ev.big}),
+    h("ul", {class: "ev"}, ...ev.rows.map(([k, [st, v]]) => h("li", {}, h("span", {class: "ic t-" + st, "aria-hidden": "true", text: ICON[st]}), h("span", {class: "k", text: k}), h("span", {class: "v t-" + (st === "yes" ? "yes" : st), text: v})))),
+    h("details", {}, h("summary", {text: "הודעת הסיום המקורית של המערכת"}), h("div", {class: "files text", text: ev.fin.content})));
+}
+
+/* ---------- browser app (task entry, confirmation, permissions, controls) ---------- */
+async function post(path, body) {
+  const r = await fetch(path, {method: "POST", cache: "no-store", headers: {"Content-Type": "application/json", "X-Orch-Token": TOKEN, "X-Orch-CSRF": CSRF}, body: JSON.stringify(body)});
+  let j = {}; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(j.error || ("HTTP " + r.status));
+  return j;
+}
+const MAX_TASK = 200000;
+const ERR_HE = {empty_task: "כתוב קודם מה תרצה שהם יעשו.", confirmation_required: "צריך לאשר במפורש.", folder_not_authorized: "כדי לעבוד בתיקייה קיימת צריך לסמן את תיבת האישור.",
+  project_folder_required: "בחרת לעבוד על פרויקט קיים — כתוב את הנתיב המלא של התיקייה שלו. (לא תיווצר תיקייה אחרת במקומה.)",
+  local_execution_not_accepted: "צריך לאשר הרצה מקומית.", confirmation_expired_or_unknown: "האישור פג תוקף. לחץ שוב על \"התחל משימה\".",
+  "another task is already running": "משימה אחרת כבר רצה. אפשר להתחיל חדשה כשהיא תסתיים."};
+const errText = e => { const m = String(e.message || e);
+  if (/^task_too_long/.test(m)) return "המשימה ארוכה מהמותר: " + m.replace(/^task_too_long:\s*/, "").replace("characters; the limit is", "תווים; המקסימום הוא") + " תווים.";
+  if (/^request_too_large/.test(m)) return "הבקשה גדולה מדי לשליחה (מעל 2MB). קצר את המשימה.";
+  if (/^budget_insufficient/.test(m)) return "התקציב שנותר לא מספיק להמשך. בחר תוספת זמן או פניות.";
+  if (/^not_goal_mode/.test(m)) return "אפשר להמשיך רק משימות שנוצרו במצב 'עבודה עד להשגת המטרה'.";
+  if (/^continuation_already_pending/.test(m)) return "כבר אישרת המשך למשימה הזו. לחץ 'המשך' כדי להתחיל אותו.";
+  if (/^note_too_long/.test(m)) return "ההנחיות ארוכות מדי (עד 20,000 תווים).";
+  if (/^handed_off/.test(m)) return "המשימה הזו הועברה להמשך בפרויקט קיים, ולכן היא נשמרת לעיון בלבד. המשך במשימה החדשה. (" + m + ")";
+  if (/^project_root_invalid/.test(m)) return "תיקיית הפרויקט המאושרת אינה תקינה עכשיו, ולכן שום דבר לא הופעל: " + m.replace(/^project_root_invalid:\s*/, "");
+  if (/^handoff_invalid/.test(m)) return "אי אפשר לקחת הקשר מהמשימה שבחרת: " + m.replace(/^handoff_invalid:\s*/, "");
+  return ERR_HE[m] || (m.startsWith("BLOCKED") ? "הבדיקה המקדימה נכשלה, ולכן לא הופעל אף מודל: " + m : m.startsWith("folder_invalid") ? "התיקייה אינה תקינה: " + m.slice(15) : m); };
+const goTask = id => { const u = new URL(location.href); u.searchParams.set("task", id); location.href = u.toString(); };
+const goHome = () => { const u = new URL(location.href); u.searchParams.delete("task"); location.href = u.toString(); };
+const sel = (id, opts, val) => { const e = h("select", {id: id}); for (const [v, l] of opts) { const o = h("option", {value: v, text: l}); if (v === val) o.selected = true; e.append(o); } return e; };
+
+async function renderHome() {
+  document.title = "Codex + Claude";
+  $("title").textContent = "Codex + Claude"; $("layout").classList.add("noside");
+  for (const id of ["replayBtn", "speed", "sideBtn", "homeBtn", "taskSel"]) $(id).hidden = true;
+  setConn(true, "השרת המקומי פועל (127.0.0.1 בלבד). משימה מתחילה רק אחרי אישור מפורש שלך.");
+  document.querySelector(".seg").hidden = true;
+  const main = $("main"), err = h("div", {class: "err", role: "alert"});
+  const task = h("textarea", {id: "taskInput", placeholder: "מה תרצה שהם יעשו?", "aria-label": "מה תרצה שהם יעשו?", dir: "auto"});
+  try { task.value = sessionStorage.getItem("orchDraft") || ""; } catch (e) {}
+  const counter = h("div", {class: "small"});
+  const count = () => { const n = task.value.length; counter.textContent = n.toLocaleString("he-IL") + " / " + MAX_TASK.toLocaleString("he-IL") + " תווים"; counter.className = n > MAX_TASK ? "err" : "small"; };
+  task.oninput = () => { count(); try { sessionStorage.setItem("orchDraft", task.value); } catch (e) {} };
+  count();
+  const settingsBox = h("div", {class: "grid2"}, h("div", {class: "small", text: "טוען את האפשרויות מ-Codex ו-Claude המותקנים..."}));
+  const folder = h("input", {type: "text", id: "folderInput", placeholder: "C:\\Users\\...\\projects\\my-project", dir: "ltr", "aria-label": "נתיב הפרויקט הקיים"});
+  const folderOk = h("input", {type: "checkbox", id: "folderOk"});
+  const handoffSel = h("select", {id: "handoffSel"}, h("option", {value: "", text: "בלי — משימה חדשה לגמרי"}));
+  const pm1 = radio("pmode", "new_workspace", "תיקייה חדשה ומבודדת (ברירת מחדל)", true), pm2 = radio("pmode", "existing_project", "עבודה על פרויקט קיים", false);
+  const existingBox = h("div", {class: "projbox", hidden: "hidden"},
+    h("label", {class: "fld"}, h("span", {text: "התיקייה של הפרויקט הקיים (נתיב מלא)"}), folder),
+    h("label", {class: "chk"}, folderOk, h("span", {text: "אני מאשר ש-Claude יקרא, ישנה ויריץ קוד ובדיקות ישירות בתיקייה הזו — הגרסה האמיתית של הפרויקט, לא עותק — ושהמתזמר יקרא ממנה את הקבצים והשינויים ויעביר אותם ל-Codex."})),
+    h("label", {class: "fld"}, h("span", {text: "להמשיך מההקשר של משימה שמורה (אופציונלי)"}), handoffSel),
+    h("div", {class: "small", text: "ההקשר (המשימה המקורית, התוכנית, הקריטריונים, הסיכום והשאלה הפתוחה) מצורף כנתונים למשימה החדשה. המשימה הישנה נשמרת כמו שהיא, ולא תמשיך לעבוד בתיקייה הישנה שלה. שום קובץ לא מועתק בין תיקיות."}));
+  const pmode = () => (document.querySelector("input[name=pmode]:checked") || {}).value || "new_workspace";
+  [pm1, pm2].forEach(r => r.querySelector("input").onchange = () => { existingBox.hidden = pmode() !== "existing_project"; });
+  const startBtn = h("button", {class: "primary", type: "button", text: "התחל משימה"});
+  const confirmBox = h("div", {});
+  let opts = null;
+  const num = id => parseInt($(id).value, 10);
+  const settings = () => !opts ? {} : Object.assign({codex_model: $("cxModel").value, codex_effort: $("cxEffort").value, claude_model: $("clModel").value, claude_effort: $("clEffort").value,
+    mode: document.querySelector("input[name=mode]:checked").value, kind: document.querySelector("input[name=kind]:checked").value, max_cycles: num("maxCycles"),
+    autonomy: (document.querySelector("input[name=autonomy]:checked") || {}).value || "balanced", ...capabilityValues(), fallback_codex: $("cxFallback") && $("cxFallback").value && $("cxFallback").value !== $("cxModel").value ? [$("cxFallback").value] : []},
+    document.querySelector("input[name=mode]:checked").value === "goal" ? {max_minutes: num("bMin"), checkpoint_cycles: num("bCyc"), max_codex_calls: num("bCx"), max_claude_calls: num("bCl")} : {});
+  startBtn.onclick = async () => {
+    err.textContent = ""; confirmBox.replaceChildren();
+    if (!task.value.trim()) { err.textContent = ERR_HE.empty_task; task.focus(); return; }
+    if (task.value.length > MAX_TASK) { err.textContent = "המשימה ארוכה מהמותר: " + task.value.length.toLocaleString("he-IL") + " תווים; המקסימום הוא " + MAX_TASK.toLocaleString("he-IL") + "."; return; }
+    startBtn.disabled = true; startBtn.textContent = "בודק את Codex ואת Claude (בלי לפנות למודל)...";
+    try {
+      const bad = [...document.querySelectorAll("input[data-min]")].find(i => !i.closest("[hidden]") && !(+i.value >= +i.dataset.min && +i.value <= +i.dataset.max && /^\d+$/.test(i.value)));
+    if (bad) { err.textContent = "ערך לא תקין: " + bad.previousSibling.textContent + " (" + bad.dataset.min + "–" + bad.dataset.max + ")"; startBtn.disabled = false; startBtn.textContent = "התחל משימה"; return; }
+    const body = {task: task.value, settings: settings(), project_mode: pmode()};
+      if (pmode() === "existing_project") {  /* never a silent fallback: an empty path is refused by the server */
+        body.folder = folder.value.trim(); body.folder_authorized = folderOk.checked;
+        if (handoffSel.value) body.handoff_from = handoffSel.value;
+      }
+      showConfirm(confirmBox, await post("/api/app/prepare", body), err);
+      confirmBox.scrollIntoView({behavior: "smooth", block: "start"});
+    } catch (e) { err.textContent = errText(e); }
+    startBtn.disabled = false; startBtn.textContent = "התחל משימה";
+  };
+  const ask = h("section", {class: "ask", "aria-label": "משימה חדשה"}, task, counter,
+    h("details", {}, h("summary", {text: "הגדרות סוכנים"}), settingsBox),
+    h("div", {class: "fld"}, h("span", {text: "איפה הסוכנים יעבדו"}), h("div", {class: "seg2"}, pm1, pm2), existingBox),
+    h("div", {class: "row"}, startBtn), err);
+  const recent = h("ul", {class: "recent"}), attn = h("div", {});
+  const running = h("div", {});
+  main.replaceChildren(h("div", {class: "home"},
+    h("div", {class: "hero"}, h("h2", {}, h("span", {class: "cx", text: "Codex"}), " + ", h("span", {class: "cl", text: "Claude"})),
+      h("p", {text: "כתוב מה תרצה שיעשו — משימת קוד או מחקר. הם יעבדו לבד, ואתה תוכל לחזור מתי שתרצה ולראות מה הושג ומה נדרש ממך."})),
+    h("div", {class: "roles"}, h("div", {class: "role cx"}, h("b", {text: "Codex — מנהל ומבקר"}), h("span", {text: "מתכנן, נותן הוראות ובודק את הקבצים ואת תוצאות הבדיקות האמיתיות."})),
+      h("div", {class: "role cl"}, h("b", {text: "Claude Code — מבצע"}), h("span", {text: "כותב קוד ומריץ בדיקות, או חוקר מקורות וכותב דוח — בהרשאות שאישרת."}))),
+    running, attn, ask, confirmBox, h("section", {}, h("div", {class: "label", text: "משימות ושיחות קודמות"}), recent)));
+  task.focus();
+  api("/api/app/state").then(st => { if (st.running && st.active_task) running.replaceChildren(h("div", {class: "appbar"}, h("span", {class: "state st-live", text: "משימה רצה כעת"}), h("button", {type: "button", text: "פתח את השיחה"}, ))); const b = running.querySelector("button"); if (b) b.onclick = () => goTask(st.active_task); if (st.last_error) err.textContent = "תקלה במשימה האחרונה: " + st.last_error; }).catch(() => {});
+  api("/api/tasks").then(r => {
+    const label = t => t.run_state === "interrupted" ? "נקטע" : t.run_state === "active" ? "עובדים עכשיו" : (STATUS_HE[t.status] || t.status);
+    const row = t => { const a = h("a", {href: "#"}, h("span", {dir: "auto", text: (t.is_mock ? "MOCK · " : "") + (t.short_title || t.id)}),
+      h("span", {class: "small"}, t.needs_owner && !t.is_mock ? h("span", {class: "needs", text: "ממתין לך · "}) : null, h("span", {class: "kind", text: (t.kind === "research" ? "מחקר" : "קוד") + " · "}), h("span", {text: label(t) + " · " + fmtDate(t.mtime)})));
+      a.onclick = ev => { ev.preventDefault(); goTask(t.id); }; return h("li", {}, a); };
+    const waiting = r.tasks.filter(t => t.needs_owner && !t.is_mock).slice(0, 3);
+    attn.replaceChildren(...(waiting.length ? [h("section", {class: "attn", "aria-label": "משימות שממתינות לך"}, h("b", {text: waiting.length === 1 ? "משימה אחת ממתינה לך" : waiting.length + " משימות ממתינות לך"}), h("ul", {class: "recent"}, ...waiting.map(row)))] : []));
+    recent.replaceChildren(...(r.tasks.length ? r.tasks.slice(0, 15).map(row) : [h("li", {class: "small", text: "עדיין אין משימות. כתוב משימה למעלה כדי להתחיל."})]));
+    for (const t of r.tasks.filter(t => !t.is_mock && t.run_state !== "active").slice(0, 40))
+      handoffSel.append(h("option", {value: t.id, text: (t.short_title || t.id) + " · " + label(t) + (t.handed_off ? " · כבר הועברה" : "") + " · " + t.id}));
+  }).catch(() => {});
+  try {
+    opts = await api("/api/app/options");
+    const d = opts.defaults, cx = opts.catalog.codex, cl = opts.catalog.claude;
+    const cxModel = sel("cxModel", cx.map(m => [m.slug, m.name]), d.codex_model);
+    const effortSel = () => { const m = cx.find(x => x.slug === cxModel.value) || cx[0]; const cur = $("cxEffort") ? $("cxEffort").value : d.codex_effort; const e = sel("cxEffort", m.efforts.map(v => [v, v]), m.efforts.includes(cur) ? cur : (m.default_effort && m.efforts.includes(m.default_effort) ? m.default_effort : m.efforts[0])); return e; };
+    const effWrap = h("label", {class: "fld"}, h("span", {text: "מאמץ החשיבה של Codex"}), effortSel());
+    cxModel.onchange = () => effWrap.replaceChild(effortSel(), $("cxEffort"));
+    settingsBox.replaceChildren(
+      h("label", {class: "fld"}, h("span", {text: "מודל Codex"}), cxModel), effWrap,
+      h("label", {class: "fld"}, h("span", {text: "מודל Claude"}), sel("clModel", [["", "ברירת המחדל של Claude Code"], ...cl.models.map(m => [m.id, m.name + " (" + m.id + ")"])], d.claude_model)),
+      h("label", {class: "fld"}, h("span", {text: "מאמץ של Claude"}), sel("clEffort", [["", "ברירת המחדל של Claude Code"], ...cl.efforts.map(v => [v, v])], d.claude_effort)),
+      modeBox(d), kindBox(d), autonomyBox(d), capabilitiesBox(d),
+      h("label", {class: "fld"}, h("span", {text: "מודל גיבוי ל-Codex (רק אם המודל שבחרת לא זמין)"}), sel("cxFallback", [["", "בלי מודל גיבוי — לעצור ולהסביר"], ...cx.map(m => [m.slug, m.name])], (d.fallback_codex || [])[0] || "")),
+      h("div", {class: "small", text: "רק אפשרויות שהגרסאות המותקנות מציעות, דרך המנויים שלך. אין API בתשלום ואין מצב מהיר. הבחירה נשמרת לפעם הבאה."}));
+  } catch (e) { opts = null; settingsBox.replaceChildren(h("div", {class: "err", text: "לא ניתן לקרוא את האפשרויות (ייעשה שימוש בברירות המחדל): " + errText(e)})); }
+}
+function radio(name, value, label, checked) { const i = h("input", {type: "radio", name: name, value: value}); if (checked) i.checked = true; return h("label", {}, i, h("span", {text: label})); }
+function numIn(id, val, min, max, label) { return h("label", {class: "fld"}, h("span", {text: label}), h("input", {type: "text", id: id, inputmode: "numeric", value: String(val), "data-min": String(min), "data-max": String(max), dir: "ltr"})); }
+function modeBox(d) {
+  const goalFields = h("div", {class: "grid2"}, numIn("bMin", d.max_minutes, 1, 1440, "זמן עבודה מרבי (דקות)"), numIn("bCyc", d.checkpoint_cycles, 1, 200, "דיווח התקדמות כל (סבבים)"),
+    numIn("bCx", d.max_codex_calls, 1, 500, "קריאות ל-Codex לכל היותר"), numIn("bCl", d.max_claude_calls, 1, 500, "קריאות ל-Claude לכל היותר"));
+  const fixedFields = h("label", {class: "fld"}, h("span", {text: "מספר סבבים"}), sel("maxCycles", [1, 2, 3, 4, 5].map(n => [String(n), String(n)]), String(d.max_cycles)));
+  const r1 = radio("mode", "goal", "עבודה עד להשגת המטרה (מומלץ)", d.mode !== "fixed"), r2 = radio("mode", "fixed", "עבודה עם מגבלת סבבים", d.mode === "fixed");
+  const sync = () => { const g = document.querySelector("input[name=mode]:checked") ? document.querySelector("input[name=mode]:checked").value === "goal" : d.mode !== "fixed"; goalFields.hidden = !g; fixedFields.hidden = g; };
+  [r1, r2].forEach(r => r.querySelector("input").onchange = sync);
+  setTimeout(sync, 0);
+  return h("div", {class: "fld", style: null}, h("span", {text: "אופן העבודה"}), h("div", {class: "seg2"}, r1, r2),
+    h("div", {class: "small", text: "עד להשגת המטרה: הסוכנים ממשיכים עד שהמטרה מאומתת, עם דיווח התקדמות מדי כמה סבבים. רק כשמגיעים לגבול הזמן או הקריאות, או כשהם נתקעים — המשימה נעצרת ושואלת אותך. שום גבול לא מוגדל בלי אישורך."}),
+    goalFields, fixedFields);
+}
+function kindBox(d) {
+  return h("div", {class: "fld"}, h("span", {text: "סוג המשימה"}), h("div", {class: "seg2"}, radio("kind", "code", "קוד (נבדק בהרצת בדיקות)", d.kind !== "research"), radio("kind", "research", "מחקר (נבדק לפי דוח וראיות)", d.kind === "research")));
+}
+function showConfirm(box, p, err) {
+  const ok = h("input", {type: "checkbox", id: "acceptLocal"});
+  const go = h("button", {class: "primary", type: "button", text: "אשר והתחל", disabled: "disabled"});
+  ok.onchange = () => { go.disabled = !ok.checked; };
+  const back = h("button", {type: "button", text: "חזרה לעריכה"}); back.onclick = () => box.replaceChildren();
+  const st = p.settings || {};
+  go.onclick = async () => {
+    go.disabled = true; go.textContent = "מתחיל...";
+    try { const r = await post("/api/app/start", {confirm_id: p.confirm_id, accept_local_execution: ok.checked}); try { sessionStorage.removeItem("orchDraft"); } catch (e) {} goTask(r.task_id); }
+    catch (e) { err.textContent = errText(e); go.textContent = "אשר והתחל"; box.replaceChildren(); }
+  };
+  box.replaceChildren(h("section", {class: "confirm", "aria-label": "אישור לפני התחלה"},
+    h("div", {class: "label", text: "לפני שמתחילים — בדוק ואשר"}),
+    h("div", {class: "kv"},
+      h("span", {class: "k", text: "המשימה"}), (() => { const t = h("div", {class: "text clamp", dir: "auto", text: p.task});
+        const b = h("button", {class: "linkbtn", type: "button", text: "הצג את כל המשימה (" + p.task.length.toLocaleString("he-IL") + " תווים — כולה תימסר לסוכנים)"});
+        b.onclick = () => { const on = t.classList.toggle("clamp"); b.textContent = on ? "הצג את כל המשימה" : "הצג פחות"; };
+        return h("div", {}, t, b); })(),
+      h("span", {class: "k", text: p.existing_folder ? "פרויקט קיים מאושר" : "תיקיית העבודה"}), p.existing_folder
+        ? h("div", {}, h("div", {class: "files", text: p.workspace}),
+            h("div", {class: "small", text: "Claude עובד בתיקייה הזו: היא תיקיית העבודה שלו, וכלי הקבצים שלו מוגבלים אליה (הגבלה של Claude Code עצמו). קוד ובדיקות שהוא מריץ פועלים בהרשאות שלך, כמו תמיד. Codex לא ניגש לקבצים: המתזמר קורא מהתיקייה הזו את רשימת הקבצים, השינויים ותוצאות הבדיקות ומעביר לו. מחיקות ושינויים בקבצים מוגנים עוצרים את המשימה עד להחלטה שלך."}))
+        : h("div", {class: "files", text: p.workspace + "   (חדשה ונקייה)"}),
+      ...(p.handoff ? [h("span", {class: "k", text: "הקשר ממשימה שמורה"}), h("div", {class: "small", text: "מהמשימה " + p.handoff.from_task + " (מצב " + (STATUS_HE[p.handoff.from_status] || p.handoff.from_status) + "). ההקשר צורף לטקסט המשימה שמוצג למעלה (" + p.handoff.brief_chars.toLocaleString("he-IL") + " תווים). המשימה הישנה תישמר כמו שהיא ותסומן כ\"הועברה\"; התיקייה הישנה שלה לא משמשת יותר: " + (p.handoff.from_workspace || "")})] : []),
+      h("span", {class: "k", text: "מצב עבודה"}), h("div", {text: "רגיל — Claude Code קורא, עורך וכותב קבצים ומריץ את הבדיקות"}),
+      h("span", {class: "k", text: "מותר בלי לשאול"}), h("div", {class: "files", text: p.allowed_tools.join(", ")}),
+      h("span", {class: "k", text: "תמיד חסום"}), h("div", {class: "files", text: p.denied_tools.join(", ")}),
+      h("span", {class: "k", text: "עצמאות"}), h("div", {}, h("b", {text: (AUTONOMY_HE[st.autonomy] || AUTONOMY_HE.balanced).name + ((st.fallback_codex || []).length ? " · מודל גיבוי ל-Codex: " + st.fallback_codex[0] : "")}), autonomyExplain(st.autonomy), capabilitySummary(st)),
+      h("span", {class: "k", text: "מודלים"}), h("div", {text: "Codex: " + iso(st.codex_model + " · " + st.codex_effort) + "   ·   Claude: " + (st.claude_model ? iso(st.claude_model) : "ברירת מחדל") + " · " + (st.claude_effort ? iso(st.claude_effort) : "מאמץ ברירת מחדל")}),
+      h("span", {class: "k", text: "סוג ואופן"}), h("div", {text: (st.kind === "research" ? "מחקר — יסתיים בדוח עם ראיות ומסקנה (גם \"לא חד-משמעי\" אפשרי)" : "קוד — יסתיים כשהבדיקות שהמערכת מריצה עוברות ו-Codex מאשר") + " · " + (st.mode === "goal" ? "עד להשגת המטרה" : "מגבלת סבבים")}),
+      h("span", {class: "k", text: "גבולות"}), h("div", {text: st.mode === "goal"
+        ? "עד " + st.max_minutes + " דקות עבודה · עד " + st.max_codex_calls + " קריאות ל-Codex ו-" + st.max_claude_calls + " ל-Claude · דיווח התקדמות כל " + st.checkpoint_cycles + " סבבים · אין מגבלת זמן לקריאה בודדת ואין מגבלת סבבים. בגבול — השהיה ושאלה אליך; שום עבודה לא אובדת."
+        : "עד " + p.max_cycles + " סבבים · עד " + p.max_codex_calls + " קריאות ל-Codex ו-" + p.max_claude_calls + " ל-Claude · עד " + p.timeout_sec.claude + " שניות לקריאה"})),
+    h("div", {class: "risk", text: "הקוד שייכתב והבדיקות ירוצו במחשב הזה, בהרשאות Windows שלך — אותו סיכון כמו שימוש רגיל ב-Claude Code. כל פעולה שאינה ברשימה למעלה תיעצר ותחכה לאישור שלך."}),
+    h("label", {class: "chk"}, ok, h("span", {text: "אני מאשר הרצה מקומית של הקוד והבדיקות במחשב הזה"})),
+    h("div", {class: "row"}, go, back)));
+}
+function riskOf(d) {
+  if (d.tool === "capability" && (d.findings || []).some(f => /^agent_cli/.test(f))) return "הסקריפט " + (d.input || "").replace(/^script /, "") + " מפעיל את Claude/Codex (יכולות ה-AI של המוצר). אישור יגדיר אותו כסקריפט יכולות AI של המשימה: כל קריאת AI שלו תיספר ותוגבל למכסה שאישרת ולמודלים המאושרים, ושינויים בקובץ לא ידרשו אישור חדש. נמצא בו גם: " + [...new Set((d.findings || []).map(f => FINDING_HE[f.split(" ")[0]] || f))].join(", ") + ". הוא ירוץ בהרשאות Windows שלך.";
+  if (d.tool === "capability") return "הרצת הסקריפט " + (d.input || "").replace(/^script /, "") + " מהפרויקט, בגרסה הזו בדיוק. נמצא בו: " + [...new Set((d.findings || []).map(f => FINDING_HE[f.split(" ")[0]] || f))].join(", ") + ". הוא ירוץ בהרשאות Windows שלך. אם הקובץ ישתנה — יידרש אישור חדש.";
+  if (d.tool === "Bash") return "הרצת פקודה במחשב שלך בהרשאות שלך. פקודה יכולה לקרוא, לשנות או למחוק קבצים שיש לך גישה אליהם.";
+  if (/^Web/.test(d.tool)) return "גישה לאינטרנט מתוך המשימה.";
+  if (/^(Read|Edit|Write|Glob|Grep)$/.test(d.tool)) return "גישה לקבצים: " + (d.input || "");
+  return "שימוש בכלי שאינו מאושר מראש.";
+}
+const CONTINUABLE = ["COMPLETE", "COMPLETED", "INCONCLUSIVE", "STOPPED", "FAILED", "BLOCKED", "NEEDS_REVISION", "PAUSED", "HUMAN_REQUIRED", "RUNNING"];
+function contBudget(st, add) {  /* authorized, used and remaining - before and after an optional extension (never a reset) */
+  const b = st.budget || {}, c = st.calls || {}, a = add || {}, used = Math.round((st.elapsed_sec || 0) / 6) / 10;
+  const after = {minutes: (b.max_minutes || 0) + (a.max_minutes || 0), codex: (b.max_codex_calls || 0) + (a.max_codex_calls || 0), claude: (b.max_claude_calls || 0) + (a.max_claude_calls || 0)};
+  const left = {minutes: Math.round((after.minutes - used) * 10) / 10, codex: after.codex - (c.codex || 0), claude: after.claude - (c.claude || 0)};
+  return {authorized: {minutes: b.max_minutes || 0, codex: b.max_codex_calls || 0, claude: b.max_claude_calls || 0}, after, used: {minutes: used, codex: c.codex || 0, claude: c.claude || 0},
+          left, enough: left.minutes >= 1 && left.codex >= 2 && left.claude >= 1};
+}
+function canContinue(st) { return APP && st && !st.is_mock && !(st.handed_off_to || []).length && st.run_state !== "active" && CONTINUABLE.includes(st.status) && st.continuation_pending == null && !/^(review_failed|reviewer_error)/.test(st.stop_reason || ""); }
+function continuePanel(st, msgs) {
+  if (!canContinue(st)) return null;
+  const terminal = !["PAUSED", "HUMAN_REQUIRED", "RUNNING"].includes(st.status), C = UI.cont || (UI.cont = {open: false, note: "", min: 0, calls: false, single: false});
+  const box = h("section", {class: "cont", id: "continueBox", "aria-label": "המשך משימה"});
+  if (st.mode !== "goal" || !st.budget) {
+    if (!terminal) return null;
+    box.append(h("div", {class: "label", text: "המשך משימה"}), h("div", {class: "small", text: "אפשר להמשיך רק משימות שנוצרו במצב 'עבודה עד להשגת המטרה' (עם תקציב זמן ופניות). למשימה הזו אפשר לפתוח משימה חדשה בבית."}));
+    return box;
+  }
+  if (!C.open) {
+    const b = h("button", {type: "button", class: terminal ? "primary" : "", text: terminal ? "המשך משימה" : "המשך עם הנחיות חדשות"}); b.onclick = () => { C.open = true; render(); const x = document.getElementById("continueBox"); if (x) x.scrollIntoView({block: "center"}); };
+    box.append(h("div", {class: "row"}, b, h("span", {class: "small", text: terminal ? "הסוכנים ימשיכו מאותה נקודה, עם כל מה שכבר נעשה. אפשר להוסיף הנחיות." : "אפשר גם להמשיך עם הנחיות חדשות במקום ההחלטה למעלה."})));
+    return box;
+  }
+  const v = lastVer(msgs), verdict = v && v.mode === "research" ? v.verdict : null;
+  const add = () => { const a = {}; if (C.min) a.max_minutes = C.min; if (C.calls) { a.max_codex_calls = 10; a.max_claude_calls = 10; } return Object.keys(a).length ? a : null; };
+  const err = h("div", {class: "err"}), go = h("button", {type: "button", class: "primary", text: "אשר והמשך"}), cancel = h("button", {type: "button", text: "ביטול"});
+  const budBox = h("div", {class: "bud"});
+  const paint = () => {
+    const nb = contBudget(st, add()), x = nb.left;
+    budBox.replaceChildren(h("b", {text: "התקציב"}),
+      h("div", {text: "זמן עבודה: אושרו " + nb.authorized.minutes + " דק׳ · נוצלו " + nb.used.minutes + " · נותרו " + Math.max(0, Math.round((nb.authorized.minutes - nb.used.minutes) * 10) / 10) + (C.min ? " → עם התוספת: " + x.minutes : "")}),
+      h("div", {dir: "rtl", text: "פניות ל-Codex: נותרו " + Math.max(0, nb.authorized.codex - nb.used.codex) + " מתוך " + nb.authorized.codex + (C.calls ? " (עם התוספת: " + x.codex + ")" : "")}),
+      h("div", {dir: "rtl", text: "פניות ל-Claude: נותרו " + Math.max(0, nb.authorized.claude - nb.used.claude) + " מתוך " + nb.authorized.claude + (C.calls ? " (עם התוספת: " + x.claude + ")" : "")}),
+      nb.enough ? h("div", {class: "small", text: "המשך משתמש בתקציב שנותר. שום מונה לא מתאפס."}) : h("div", {class: "small t-warn", text: "התקציב שנותר לא מספיק להמשך (נדרשות לפחות דקה, 2 פניות ל-Codex ופנייה אחת ל-Claude). בחר תוספת:"}));
+    go.disabled = !nb.enough;
+  };
+  const minSel = h("div", {class: "ext"}, ...[[0, "בלי תוספת זמן"], [30, "+30 דקות"], [60, "+60 דקות"]].map(([n, l]) => { const r = h("input", {type: "radio", name: "contMin", value: String(n)}); r.checked = C.min === n; r.onchange = () => { C.min = n; paint(); }; return h("label", {}, r, h("span", {text: l})); }));
+  const callsChk = h("input", {type: "checkbox"}); callsChk.checked = C.calls; callsChk.onchange = () => { C.calls = callsChk.checked; paint(); };
+  const ta = h("textarea", {dir: "auto", placeholder: "למשל: בדוק גם הזדמנויות שלא נבדקו… התמקד ב… (לא חובה)", "aria-label": "הנחיות נוספות"});
+  ta.value = C.note; const cnt = h("span", {class: "small"}); const count = () => { cnt.textContent = ta.value.length.toLocaleString("he-IL") + " / 20,000 תווים"; }; ta.oninput = () => { C.note = ta.value; count(); }; count();
+  cancel.onclick = () => { UI.cont = null; render(); };
+  go.onclick = async () => {
+    if (ta.value.length > 20000) { err.textContent = ERR_HE.note_too_long || "ההנחיות ארוכות מדי."; return; }
+    go.disabled = true; err.textContent = "";
+    try { await post("/api/app/continue", {task_id: taskId, note: ta.value, add: add(), single_pass: !!C.single, confirm: true}); UI.cont = null; }
+    catch (e) { err.textContent = errText(e); go.disabled = false; }
+  };
+  box.append(h("div", {class: "label", text: "המשך משימה"}),
+    h("div", {}, h("b", {text: "מה קרה עד עכשיו: "}), h("span", {text: humanReason(st) + (verdict ? " המסקנה הקודמת: " + verdict + " — היא נשארת בהיסטוריה." : "")})),
+    budBox, h("div", {}, h("div", {class: "small", text: "תוספת (רק אם צריך):"}), minSel, h("label", {class: "chk"}, callsChk, h("span", {text: "+10 פניות לכל סוכן"}))),
+    h("label", {class: "fld"}, h("span", {text: "הנחיות נוספות (לא חובה)"}), ta, cnt),
+    (() => { const x = h("input", {type: "checkbox"}); x.checked = C.single === true; x.onchange = () => { C.single = x.checked; render(); };
+      return h("label", {class: "chk"}, x, h("span", {text: "תיקון ממוקד אחד: Claude מתקן פעם אחת, Codex בודק פעם אחת, ואז המשימה עוצרת להחלטה שלך (אלא אם Codex מאשר)"})); })(),
+    h("div", {}, h("b", {text: "מה יקרה אחרי האישור:"}), h("ul", {},
+      C.single === true ? h("li", {class: "small", text: "Claude יקבל את ההנחיות שלך ואת הבקשות האחרונות של Codex, ויתקן פעם אחת — בלי תכנון נוסף."})
+        : h("li", {class: "small", text: "Codex יקרא מה כבר נעשה ונמצא, ואת ההנחיות שלך (אם הוספת), ויתכנן את ההמשך."}),
+      h("li", {class: "small", text: "Claude ימשיך לעבוד באותה תיקייה ועם אותם קבצים, דוחות והרשאות. כלום לא נמחק ולא מתחיל מאפס."}),
+      C.single === true ? h("li", {class: "small", text: "Codex יבדוק פעם אחת. אם הוא מאשר — המשימה מסתיימת. אחרת הממצאים שלו נשמרים והמשימה עוצרת להחלטה שלך; שום סבב נוסף לא מתחיל לבד."})
+        : h("li", {class: "small", text: "Codex יבדוק את העבודה כרגיל, והמשימה תיעצר כשתסתיים או כשייגמר התקציב. אפשר להשהות או לעצור בכל רגע."}))),
+    h("div", {class: "row"}, go, cancel), err);
+  paint();
+  return box;
+}
+function decisionContext(st) {  /* what the agents report so far, attributed; nothing is invented when there is no summary */
+  const sm = st.status_summary, x = sm && sm.sections;
+  if (!x) return h("div", {class: "small", text: "אין עדיין סיכום של הסוכנים לעבודה הזו. אפשר לקרוא את השיחה למעלה, או לבקש סיכום בכרטיס \"סיכום מצב המשימה\"."});
+  const by = (sm.author === "codex" ? "Codex" : "Claude (ביניים, טרם נבדק)") + " · סבב " + sm.cycle + " · " + relTime(sm.at);
+  return h("div", {class: "why"}, h("div", {class: "small", text: "מה הסוכנים מדווחים (" + by + "):"}),
+    x.bottom_line ? h("div", {dir: "auto"}, h("b", {text: "מה הושג: "}), h("span", {text: x.bottom_line})) : null,
+    (x.open || []).length ? h("div", {dir: "auto"}, h("b", {text: "מה עדיין פתוח: "}), h("span", {text: x.open.slice(0, 2).join(" · ")})) : null,
+    x.next ? h("div", {dir: "auto"}, h("b", {text: "מה הם מציעים: "}), h("span", {text: x.next})) : null);
+}
+function appPanels(st) {
+  if (!APP || UI.replay || !st) return [];
+  if (st.is_mock) return st.run_state === "active" ? [] : [h("div", {class: "appbar"}, h("span", {class: "small", text: "זו ריצת הדגמה (MOCK): אי אפשר להמשיך אותה עם הסוכנים האמיתיים."}))];
+  if ((st.handed_off_to || []).length && st.run_state !== "active") return [];  /* kept for reference; see the banner on top */
+  const out = [], tid = taskId, err = h("span", {class: "err"});
+  const act = async (action, btn) => { btn.disabled = true; try { await post("/api/app/control", {task_id: tid, action: action}); } catch (e) { err.textContent = errText(e); btn.disabled = false; } };
+  const bar = h("div", {class: "appbar"});
+  if (st.run_state === "active") {
+    const p = h("button", {type: "button", text: "השהה"}); p.onclick = () => act("pause", p);
+    const c = h("button", {type: "button", class: "danger", text: "בטל משימה"}); c.onclick = () => { if (confirm("לבטל את המשימה? פעולה שרצה כעת תיעצר.")) act("stop", c); };
+    bar.append(h("span", {class: "small", text: "המשימה רצה."}), p, c);
+  } else if ((st.status === "PAUSED" && !/^(budget_reached|review_failed|review_changes_requested|review_rejected)/.test(st.stop_reason || "")) || (st.status === "RUNNING" && st.run_state === "interrupted")) {
+    const r = h("button", {type: "button", class: "primary", text: "המשך"}); r.onclick = () => act("resume", r);
+    const c = h("button", {type: "button", class: "danger", text: "בטל משימה"}); c.onclick = () => act("stop", c);
+    const ie = /^internal_error/.test(st.stop_reason || "") ? st.stop_reason : st.internal_error ? st.internal_error.error + (st.internal_error.state_save_error ? " (גם שמירת המצב נכשלה: " + st.internal_error.state_save_error + ")" : "") : "";
+    bar.append(h("span", {class: "small", text: ie ? "הריצה נעצרה בגלל תקלה פנימית במערכת (לא בגלל הסוכנים). שום עבודה לא אבדה, ואפשר להמשיך. השגיאה בפועל: " + ie
+      : st.status === "PAUSED" ? "המשימה מושהית. שום עבודה לא אבדה." : "הריצה נקטעה (למשל אחרי סגירת החלון). אפשר להמשיך."}), r, c);
+  }
+  if (bar.childNodes.length) { bar.append(err); out.push(bar); }
+  if (st.status === "PAUSED" && /^budget_reached/.test(st.stop_reason || "") && st.budget) {
+    const berr = h("div", {class: "err"}), b = st.budget;
+    const ext = async (add, btn) => { btn.disabled = true; try { await post("/api/app/budget", {task_id: tid, add: add}); } catch (e) { berr.textContent = errText(e); btn.disabled = false; } };
+    const mk = (label, add, primary) => { const x = h("button", {type: "button", class: primary ? "primary" : "", text: label}); x.onclick = () => ext(add, x); return x; };
+    const byCalls = /calls/.test(st.stop_reason), cl = st.calls || {};
+    const first = byCalls ? mk("+10 פניות לכל סוכן, והמשך", {max_codex_calls: 10, max_claude_calls: 10}, true) : mk("עוד שעה (+60 דקות), והמשך", {max_minutes: 60}, true);
+    const second = byCalls ? mk("+10 פניות ו-+60 דקות, והמשך", {max_minutes: 60, max_codex_calls: 10, max_claude_calls: 10}) : mk("עוד חצי שעה (+30 דקות), והמשך", {max_minutes: 30});
+    const stop = h("button", {type: "button", class: "danger", text: "סיים כאן"}); stop.onclick = () => { if (confirm("לסיים את המשימה כאן? הדוח והקבצים שנכתבו יישארו זמינים.")) act("stop", stop); };
+    out.push(h("section", {class: "budget dec", role: "alert"}, h("div", {class: "label", text: byCalls ? "נגמר מספר הפניות שאישרת — המשימה מושהית" : "נגמר זמן העבודה שאישרת — המשימה מושהית"}),
+      h("div", {text: humanReason(st) + " ההחלטה אם להמשיך היא שלך."}),
+      decisionContext(st),
+      h("div", {class: "opt"}, h("div", {class: "row"}, first, second, stop),
+        h("div", {class: "small", text: "בהמשך: הסוכנים ימשיכו מאותה נקודה, עם אותו מחקר וקבצים. המונים לא מתאפסים, והמשימה תיעצר שוב בגבול החדש."}),
+        h("div", {class: "small", text: "בסיום: המשימה נעצרת. הדוח, הקבצים והשיחה נשארים זמינים."})),
+      h("details", {}, h("summary", {class: "small", text: "פרטים ואפשרויות נוספות"}),
+        h("div", {class: "small", text: "נוצלו: " + Math.round((st.elapsed_sec || 0) / 60) + " מתוך " + b.max_minutes + " דקות · Codex " + (cl.codex || 0) + "/" + b.max_codex_calls + " פניות · Claude " + (cl.claude || 0) + "/" + b.max_claude_calls + " פניות. רק אתה יכול להגדיל את הגבולות."}),
+        h("div", {class: "row"}, mk("הגדל הכל: +60 דקות ו-+10 פניות", {max_minutes: 60, max_codex_calls: 10, max_claude_calls: 10})),
+        h("div", {class: "small mono", text: st.stop_reason})), berr));
+  }
+  if (st.status === "HUMAN_REQUIRED" && /^(stalled|reviewer_requested_human|review_loop|acceptance_unverifiable|model_authorization_required|mission_capabilities_required)/.test(st.stop_reason || "") && !(st.pending_permissions || []).length) {
+    const stalled = /^stalled/.test(st.stop_reason), research = st.kind === "research";
+    const ownerLevel = !!(st.pending_decision && st.pending_decision.category && !["acceptance", "model_authorization", "mission_capabilities"].includes(st.pending_decision.category));
+    const r = h("button", {type: "button", class: "primary", text: ownerLevel ? "המשך בלי לבצע את הפעולה הזו" : stalled ? "נסה שוב" : research ? "המשך: Codex יבדוק את העבודה הקיימת" : "המשך לסבב נוסף"}); r.onclick = () => act("resume", r);
+    const c = h("button", {type: "button", class: "danger", text: "עצור כאן"}); c.onclick = () => act("stop", c);
+    out.push(h("section", {class: "budget dec", role: "alert"}, h("div", {class: "label", text: stalled ? "הסוכנים לא מתקדמים — נדרשת החלטה שלך" : /^model_authorization/.test(st.stop_reason) ? "נדרש אישור מודל" : /^mission_capabilities/.test(st.stop_reason) ? "אישור יכולות למשימה — פעם אחת, לפני העבודה" : "Codex עצר ומבקש החלטה שלך"}),
+      h("div", {text: humanReason(st)}),
+      st.pending_question ? h("div", {class: "why"}, h("b", {text: stalled ? "הסבר המערכת: " : "Codex שואל: "}), h("span", {dir: "auto", text: st.pending_question})) : null,
+      ownerDecision(st.pending_decision),
+      resumeSettings(st, err),
+      ownerLevel ? h("div", {class: "risk", text: "אף כפתור כאן לא מבצע את הפעולה עצמה. \"המשך\" ממשיך את העבודה בלעדיה. אם זו הרצה של יכולות ה-AI של המוצר דרך המנויים שלך — אפשר לאשר אותה בשדה 'קריאות AI שסקריפטים רשאים לבצע' למעלה. לכל פעולה אחרת: השתמש ב\"המשך עם הנחיות חדשות\" וכתוב במפורש מה מותר — וגם אז היא תתבצע רק אם יש לה הרשאה מתאימה, ובקשת הרשאה תופיע כאן לאישורך."}) : null,
+      decisionContext(st),
+      h("div", {class: "opt"}, h("div", {class: "row"}, ...(/^(model_authorization|mission_capabilities)/.test(st.stop_reason) ? [c] : [r, c])),
+        h("div", {class: "small", text: stalled ? "נסה שוב: הסוכנים ימשיכו עם ההוראה האחרונה. מומלץ רק אם נראה שהמצב השתנה — אחרת הם עלולים לחזור על אותו צעד."
+          : research ? "המשך: Codex יקרא שוב את כל הדוח והקבצים ויחליט על הצעד הבא, בלי להפעיל את Claude. זו פנייה אחת או שתיים ל-Codex מהתקציב." : "המשך: הסוכנים ימשיכו בסבב נוסף עם ההוראה האחרונה."}),
+        h("div", {class: "small", text: "עצור כאן: המשימה מסתיימת. הקבצים והשיחה נשארים זמינים."})),
+      h("details", {}, h("summary", {class: "small", text: "פרטים טכניים"}), h("div", {class: "small mono", text: st.stop_reason})), err));
+  }
+  if ((st.status === "PAUSED" && /^review_failed/.test(st.stop_reason || "")) || (st.status === "FAILED" && st.kind === "research" && /^reviewer_error/.test(st.stop_reason || ""))) {
+    const b = st.budget || {}, cl = st.calls || {}, left = b.max_codex_calls != null ? b.max_codex_calls - (cl.codex || 0) : null;
+    const r = h("button", {type: "button", class: "primary", text: "נסה שוב רק את הביקורת העצמאית"}); r.onclick = () => act("resume", r);
+    const c = h("button", {type: "button", class: "danger", text: "סיים כאן"}); c.onclick = () => { if (confirm("לסיים בלי ביקורת עצמאית? הדוח והקבצים יישארו, אבל לא יהיה להם אישור.")) act("stop", c); };
+    out.push(h("section", {class: "budget dec", role: "alert"}, h("div", {class: "label", text: "הביקורת העצמאית נכשלה בגלל תקלה טכנית — לא ניתן אישור"}),
+      h("div", {text: "המחקר עצמו נשמר במלואו (הדוח, הקבצים וההיסטוריה). Codex לא אישר אותו — הביקורת לא הסתיימה."}),
+      decisionContext(st),
+      h("div", {class: "opt"}, h("div", {class: "row"}, r, c),
+        h("div", {class: "small", text: "נסה שוב: רק Codex יופעל — הוא יקרא את הדוח המלא ואת קבצי המחקר ויכתוב ביקורת עצמאית. Claude לא יופעל, והמחקר לא ישתנה. זו פנייה אחת או שתיים ל-Codex מהתקציב" + (left != null ? " (נותרו " + left + ")" : "") + "."}),
+        h("div", {class: "small", text: "אחרי הביקורת: אם Codex מאשר — המשימה מסתיימת עם המסקנה שנבדקה. אם הוא מבקש שינויים, דוחה או שואל — הממצאים נשמרים והמשימה עוצרת להחלטה שלך. שום דבר נוסף לא מתחיל לבד."}),
+        h("div", {class: "small", text: "סיים כאן: המשימה מסתיימת בלי אישור עצמאי."})),
+      h("details", {}, h("summary", {class: "small", text: "פרטים טכניים"}), h("div", {class: "small mono", text: st.stop_reason})), err));
+  }
+  if (st.status === "PAUSED" && /^(review_changes_requested|review_rejected)/.test(st.stop_reason || "")) {
+    const rejected = /^review_rejected/.test(st.stop_reason), r = h("button", {type: "button", class: "primary", text: "המשך: Claude יבצע את השינויים ש-Codex ביקש"});
+    r.onclick = () => act("resume", r);
+    const c = h("button", {type: "button", class: "danger", text: "סיים כאן"}); c.onclick = () => { if (confirm("לסיים כאן? הדוח, הקבצים והביקורת יישארו זמינים.")) act("stop", c); };
+    out.push(h("section", {class: "budget dec", role: "alert"}, h("div", {class: "label", text: rejected ? "Codex דחה את המחקר — ההחלטה שלך" : "Codex ביקש שינויים — ההחלטה שלך"}),
+      h("div", {text: humanReason(st)}),
+      h("div", {class: "why"}, h("b", {text: "מה Codex מצא: "}), h("span", {dir: "auto", text: st.stop_reason.replace(/^review_(changes_requested|rejected):\s*/, "")})),
+      !rejected && st.strategy ? h("div", {class: "why"}, h("b", {text: "מה Codex מבקש לעשות: "}), h("span", {dir: "auto", text: st.strategy})) : null,
+      h("div", {class: "opt"}, h("div", {class: "row"}, ...(rejected ? [c] : [r, c])),
+        rejected ? null : h("div", {class: "small", text: "המשך: Claude יעבוד על הבקשה של Codex באותה תיקייה, ו-Codex יבדוק שוב — כמו סבב רגיל, מהתקציב שנותר."}),
+        h("div", {class: "small", text: "אפשר גם \"המשך עם הנחיות חדשות\" למטה, כדי לתת הנחיות משלך במקום. סיים כאן: המשימה מסתיימת, והכול נשמר."})), err));
+  }
+  if (st.status === "FAILED" && st.kind === "research" && /^malformed_output/.test(st.stop_reason || "")) {
+    const r = h("button", {type: "button", class: "primary", text: "המשך: בדיקת Codex לעבודה הקיימת"}); r.onclick = () => act("resume", r);
+    out.push(h("section", {class: "budget", role: "alert"}, h("div", {class: "label", text: "התשובה של סוכן נדחתה בגלל שגיאת פורמט — לא בגלל התוכן"}),
+      h("div", {class: "files text", text: st.stop_reason}),
+      h("div", {text: "המחקר, הקבצים, הסשן של Claude והמונים נשמרו. ההמשך מאמת מחדש את הדיווח שנדחה לפי הכללים המעודכנים, ומעביר את העבודה הקיימת לבדיקה מלאה של Codex — בלי להריץ את Claude שוב. הקריאות ל-Codex נספרות בתקציב."}),
+      h("div", {class: "row"}, r), err));
+  }
+  const pend = st.status === "HUMAN_REQUIRED" ? (st.pending_permissions || []) : [];
+  /* (permission requests below: approving allows only this exact action for this task) */
+  if (pend.length) {
+    const perr = h("div", {class: "err"});
+    const decide = async (decision, rules, btns) => { btns.forEach(b => b.disabled = true); try { await post("/api/app/permission", {task_id: tid, decision: decision, rules: rules}); } catch (e) { perr.textContent = errText(e); btns.forEach(b => b.disabled = false); } };
+    const items = pend.map(d => {
+      const btns = [];
+      const yes = h("button", {type: "button", class: "primary", text: "אשר פעולה זו"}); const no = h("button", {type: "button", text: "דחה"});
+      btns.push(yes, no);
+      yes.onclick = () => decide("approve", [d.suggested_rule], btns); no.onclick = () => decide("deny", [], btns);
+      const ai = d.kind === "script" && (d.findings || []).some(f => /^agent_cli/.test(f));
+      const builtin = ai ? h("button", {type: "button", class: "primary", text: "השתמש בסקירה המובנית של Codex במקום"}) : null;
+      if (builtin) { btns.push(builtin); builtin.onclick = () => decide("builtin_review", [], btns); }
+      return h("div", {class: "item"},
+        h("div", {}, h("b", {text: "הפעולה: "}), h("span", {class: "files", text: d.tool + (d.input ? ": " + d.input : "")})),
+        d.suggested_rule ? h("div", {}, h("b", {text: "הכלל שיאושר (רק למשימה הזו): "}), h("span", {class: "files", text: d.suggested_rule})) : h("div", {class: "err", text: "פעולה כזו לעולם אינה ניתנת לאישור (למשל מחיקה, git push או גישה כללית ל-shell)."}),
+        h("div", {}, h("b", {text: "בתיקייה: "}), h("span", {class: "files", text: st.workspace || ""})),
+        h("div", {class: "risk", text: "הסיכון: " + riskOf(d)}),
+        h("div", {class: "small", text: "אישור: Claude יוכל לבצע את הפעולה הזו במשימה הזו בלבד, והעבודה תמשיך. דחייה: Claude יקבל הודעה שהפעולה לא אושרה וימשיך בלעדיה."}),
+        builtin ? h("div", {class: "small", text: "הסקירה המובנית: הסקריפט לא ירוץ. Claude ימשיך באותו סשן, ייצא את התוצר השמור לקובץ טקסט (קריאה בלבד) ויבקש מהמתזמר סקירת Codex — במודל ובתקציב שכבר אישרת, בלי סקריפט ובלי הפעלת CLI."}) : null,
+        h("div", {class: "row"}, ...(builtin ? [builtin] : []), ...(d.suggested_rule ? [yes, no] : [no])));
+    });
+    out.push(h("section", {class: "perm", role: "alert"}, h("div", {class: "label", text: "Claude ביקש פעולה שאינה מאושרת מראש — הפעולה נחסמה ומחכה להחלטה שלך"}), ...items, perr));
+  }
+  return out;
+}
+const AUTONOMY_HE = {
+  supervised: {name: "בפיקוח", auto: ["תיקוני קוד שהביקורת ביקשה עוברים ל-Claude לבד", "בדיקות הפרויקט רצות דרך השער המאובטח"],
+    owner: ["כל שאלה של Codex", "כל פקודה שנחסמה", "כל סקריפט מהפרויקט"]},
+  balanced: {name: "מאוזן (מומלץ)", auto: ["שאלות טכניות חוזרות ל-Codex להחלטה — לא אליך", "פקודות בדיקה שנחסמו מופנות לשער המאובטח", "סקריפטים בלי השפעה חיצונית רצים לבד (נבדקים אוטומטית)", "תקלות זמניות מנוסות שוב עד 2 פעמים", "ביקורת שנכשלה טכנית מנוסה שוב — בלי להריץ את Claude שוב", "מעבר למודל גיבוי — רק אם בחרת אחד מראש", "הצעות קוסמטיות לא מעכבות תוצאה מאומתת"], owner: []},
+  autonomous: {name: "עצמאי בתוך הגבולות", auto: ["כמו מאוזן, עם עד 3 ניסיונות חוזרים ויותר סבבי שיפור לפני עצירה"], owner: []}};
+const ALWAYS_OWNER = ["כסף, תשלום או שינוי מסלול בתשלום", "סיסמאות, חשבונות ופרטי גישה", "עבודה מחוץ לתיקייה שאישרת", "מחיקה או שינוי הרסני של נתונים חשובים", "פרסום, העלאה, שליחה, git push או פריסה", "התקנות או שינויי מערכת", "סקריפט שנמצא בו שימוש ברשת, בתוכנות אחרות, במחיקות או בכלי AI", "קבלת תוצאה שאי אפשר לאמת"];
+const FINDING_HE = {network: "גישה לרשת", processes: "הפעלת תוכנות אחרות", deletion: "מחיקת קבצים", system: "גישה למערכת", agent_cli: "הפעלת Claude או Codex (צריכת מנוי)", dynamic_code: "הרצת קוד דינמי"};
+const DECISION_HE = {auto_correction: "תיקון אוטומטי הוחזר ל-Claude", agent_operation: "סקירת Codex מובנית", policy_reask: "שאלה טכנית הוחזרה ל-Codex", redirect: "פקודה חסומה הופנתה לשער המאובטח", recovery: "שחזור אוטומטי", model_fallback: "מעבר למודל גיבוי שאישרת", accept_minor: "התקבל עם הערות לא מעכבות"};
+function autonomyExplain(level) {
+  const a = AUTONOMY_HE[level] || AUTONOMY_HE.balanced;
+  return h("div", {class: "small"}, h("div", {}, h("b", {text: "יטופל לבד: "}), h("span", {text: a.auto.join(" · ")})),
+    h("div", {}, h("b", {text: "תמיד ישאל אותך: "}), h("span", {text: (a.owner || []).concat(ALWAYS_OWNER).join(" · ")})),
+    h("div", {text: "הבדיקות והסקריפטים רצים במחשב שלך בהרשאות שלך — השער מגביל ומתעד, אבל אינו ארגז חול של מערכת ההפעלה."}));
+}
+function autonomyBox(d) {
+  const cur = d.autonomy || "balanced", expl = h("div", {});
+  const rs = ["supervised", "balanced", "autonomous"].map(v => radio("autonomy", v, AUTONOMY_HE[v].name, v === cur));
+  const sync = () => expl.replaceChildren(autonomyExplain((document.querySelector("input[name=autonomy]:checked") || {}).value || cur));
+  rs.forEach(r => r.querySelector("input").onchange = sync); setTimeout(sync, 0);
+  return h("div", {class: "fld"}, h("span", {text: "כמה עצמאות לתת לסוכנים"}), h("div", {class: "seg2"}, ...rs), expl);
+}
+function autonomyChip(st) {
+  const lvl = (st.autonomy || {}).level || "legacy", name = (AUTONOMY_HE[lvl] || {}).name || "כמו קודם (משימה ישנה)";
+  const box = h("span", {class: "small"}, h("b", {text: "עצמאות: "}), h("span", {text: name + ((st.autonomy || {}).script_ai_runs ? " · קריאות AI לסקריפטים: " + st.autonomy.script_ai_runs : "")}));
+  if (APP && !st.is_mock && st.run_state !== "active" && !(st.handed_off_to || []).length) {
+    const s = sel("autonomyChange", [["", "שנה..."], ["supervised", AUTONOMY_HE.supervised.name], ["balanced", AUTONOMY_HE.balanced.name], ["autonomous", AUTONOMY_HE.autonomous.name]], "");
+    s.onchange = () => { if (s.value && confirm("לשנות את רמת העצמאות של המשימה ל" + AUTONOMY_HE[s.value].name + "? השינוי חל מהצעד הבא.")) post("/api/app/autonomy", {task_id: taskId, level: s.value}).catch(e => alert(errText(e))); };
+    box.append(" ", s);
+  }
+  return box;
+}
+function ownerDecision(d) {  /* a genuine owner decision: what, why, what is affected, risks, alternatives (from Codex, labelled) */
+  if (!d || !(d.action || d.risks || d.why_owner)) return null;
+  const row = (k, v) => v ? h("div", {}, h("b", {text: k}), h("span", {dir: "auto", text: v})) : null;
+  return h("div", {class: "why"}, row("למה זו החלטה שלך: ", d.why_owner), row("הפעולה: ", d.action), row("המטרה: ", d.purpose),
+    row("מה מושפע: ", d.affected), row("סיכונים: ", d.risks), row("חלופות: ", d.alternatives));
+}
+function blockerCard(st) {  /* why autonomy ended the loop: the record, not a question */
+  const b = st && st.blocker;
+  if (!b || st.status !== "NEEDS_REVISION") return null;
+  return h("section", {class: "budget"}, h("div", {class: "label", text: "החסם שלא נפתר (נכתב ע״י המתזמר)"}),
+    h("div", {dir: "auto", text: b.why}),
+    (b.open_findings || []).length ? h("ul", {}, ...b.open_findings.map(f => h("li", {class: "small", dir: "auto", text: f}))) : null,
+    (b.criteria_open || []).length ? h("div", {class: "small"}, h("b", {text: "קריטריונים פתוחים: "}), h("span", {dir: "auto", text: b.criteria_open.join(" · ")})) : null,
+    b.next_step ? h("div", {class: "small"}, h("b", {text: "הצעד הבא ש-Codex ביקש (לא בוצע): "}), h("span", {dir: "auto", text: b.next_step})) : null,
+    h("div", {class: "small", text: "אפשר להמשיך מכאן עם \"המשך משימה\" ולהוסיף הנחיה שמכריעה את החסם; ההיסטוריה, התקציב והאישורים נשמרו."}));
+}
+function decisionsPanel(st) {  /* what was decided or recovered WITHOUT the owner, from the task record (never invented) */
+  if (!st || UI.replay) return null;
+  const ds = st.decisions || [], m = st.metrics || {};
+  if (!ds.length && !m.owner_interventions && !(st.nonblocking_suggestions || []).length) return null;
+  const by = m.by_role || {}, calls = Object.entries(by).filter(([k]) => !/^orchestrator/.test(k)).map(([k, v]) => k.replace("codex:", "Codex ").replace("claude:", "Claude ") + " " + v.calls).join(" · ");
+  const box = h("details", {class: "filesbox"}, h("summary", {text: "החלטות שהתקבלו לבד: " + ds.length + " · פניות אליך: " + (m.owner_interventions || 0) + " · שחזורים שהצליחו: " + (m.recoveries_succeeded || 0)}));
+  box.append(h("div", {class: "small", text: "פניות למודלים לפי תפקיד: " + (calls || "—") + (m.capability_runs ? " · הרצות דרך השער: " + m.capability_runs : "")}));
+  if (ds.length) box.append(h("ul", {}, ...ds.slice(-15).reverse().map(d => h("li", {class: "small"}, h("b", {text: "סבב " + (d.cycle || 0) + " · " + (DECISION_HE[d.kind] || d.kind) + ": "}), h("span", {dir: "auto", text: d.what}), h("span", {class: "small", dir: "auto", text: " — למה: " + d.why})))));
+  if ((st.nonblocking_suggestions || []).length) box.append(h("div", {class: "small"}, h("b", {text: "הצעות לא מעכבות (נרשמו, לא בוצעו): "}), h("span", {dir: "auto", text: st.nonblocking_suggestions.join(" · ")})));
+  return box;
+}
+function capabilitiesBox(d) {  /* mission setup: everything ordinary collaboration needs, authorized once */
+  const reviews = h("input", {type: "text", id: "capReviews", inputmode: "numeric", dir: "ltr", value: d.agent_reviews != null ? String(d.agent_reviews) : "", placeholder: "לפי רמת העצמאות"});
+  const runs = h("input", {type: "text", id: "capRuns", inputmode: "numeric", dir: "ltr", value: String(d.script_ai_runs || 0)});
+  const scripts = h("textarea", {id: "capScripts", dir: "ltr", rows: "2", placeholder: "tools/ai_review_retry.py"});
+  scripts.value = (d.ai_scripts || []).join("\n");
+  return h("div", {class: "fld"}, h("span", {text: "מה הסוכנים רשאים לעשות במשימה בלי לשאול (מאושר עכשיו, פעם אחת)"}),
+    h("label", {class: "fld"}, h("span", {text: "סקירות Codex של תוצרים (ריק = לפי רמת העצמאות: מאוזן 6, עצמאי 10)"}), reviews),
+    h("label", {class: "fld"}, h("span", {text: "סקריפטים של המוצר שמפעילים את יכולות ה-AI שלו (נתיב יחסי בכל שורה)"}), scripts),
+    h("label", {class: "fld"}, h("span", {text: "קריאות AI אמיתיות שהסקריפטים האלה רשאים לבצע (נספרות ונאכפות; רק במודלים שאושרו)"}), runs),
+    h("div", {class: "small", text: "אם התוכנית של Codex תצטרך יותר — תתבקש לאשר הכול יחד, פעם אחת, לפני שהעבודה מתחילה. סקריפט שלא הוצהר, גישה לרשת, מחיקות, פרסום או תשלום — תמיד יחזרו אליך."}));
+}
+function capabilityValues() {
+  const v = id => ($(id) ? $(id).value.trim() : ""), out = {};
+  if (v("capReviews") !== "") out.agent_reviews = parseInt(v("capReviews"), 10);
+  if (v("capRuns") !== "") out.script_ai_runs = parseInt(v("capRuns"), 10);
+  out.ai_scripts = v("capScripts").split(/\r?\n/).map(x => x.trim().replace(/\\/g, "/")).filter(Boolean);
+  return out;
+}
+function capabilitySummary(st) {
+  return h("div", {class: "small"}, h("b", {text: "יכולות שאושרו מראש: "}), h("span", {dir: "ltr", text: "Codex artifact reviews ×" + (st.agent_reviews || 0) +
+    " · AI-integration scripts: " + ((st.ai_scripts || []).join(", ") || "none") + " · real AI calls by them ×" + (st.script_ai_runs || 0)}));
+}
+function resumeSettings(st, err) {  /* OWNER: how the agents continue - level, allowances, models (validated by the server) */
+  if (!APP || st.is_mock || (st.handed_off_to || []).length) return null;
+  const a = st.autonomy || {}, legacy = a.level === "legacy", pd = st.pending_decision || {}, modelAuth = pd.category === "model_authorization";
+  const lvl = sel("rsLevel", [["supervised", AUTONOMY_HE.supervised.name], ["balanced", AUTONOMY_HE.balanced.name], ["autonomous", AUTONOMY_HE.autonomous.name]], legacy ? "balanced" : a.level);
+  const need = pd.category === "mission_capabilities" ? (pd.needed || []) : [];
+  const needRuns = need.filter(x => x.kind === "ai_integration_script").reduce((n, x) => n + (x.count || 1), 0);
+  const needRev = need.filter(x => x.kind === "artifact_reviews").reduce((n, x) => Math.max(n, x.count || 1), 0);
+  const runs = h("input", {type: "text", id: "rsRuns", inputmode: "numeric", dir: "ltr", value: String(Math.max(a.script_ai_runs || 0, needRuns))});
+  const revs = h("input", {type: "text", id: "rsReviews", inputmode: "numeric", dir: "ltr", value: String(Math.max(legacy ? 6 : (a.agent_reviews || 0), needRev))});
+  const scripts = h("textarea", {id: "rsScripts", dir: "ltr", rows: "2", placeholder: "tools/ai_review_retry.py"});
+  scripts.value = [...new Set([...(a.ai_scripts || []), ...need.filter(x => x.kind === "ai_integration_script" && x.path).map(x => x.path)])].join("\n");
+  const fb = sel("rsFallback", [["", "בלי"]], ((a.fallback_models || {}).codex || [])[0] || "");
+  const pick = modelAuth ? sel("rsModel", (pd.offered || []).map(m => [m, m]), (pd.offered || [])[0]) : null;
+  api("/api/app/options").then(o => { for (const m of o.catalog.codex) fb.append(h("option", {value: m.slug, text: m.name})); if (((a.fallback_models || {}).codex || [])[0]) fb.value = a.fallback_models.codex[0];
+    if (pick && pd.agent === "claude") for (const m of o.catalog.claude.models) pick.append(h("option", {value: m.id, text: m.name})); }).catch(() => {});
+  const go = h("button", {type: "button", class: "primary", text: modelAuth ? "אשר את המודל והמשך" : need.length ? "אשר את היכולות והתחל" : "שמור את ההגדרות והמשך"});
+  go.onclick = async () => {
+    const n = parseInt(runs.value, 10); if (!(n >= 0 && n <= 20)) { err.textContent = "מספר הקריאות צריך להיות 0–20."; return; }
+    go.disabled = true;
+    try {
+      const rv = parseInt(revs.value, 10); if (!(rv >= 0 && rv <= 30)) { err.textContent = "מספר הסקירות צריך להיות 0–30."; go.disabled = false; return; }
+      const body = {task_id: taskId, level: lvl.value, script_ai_runs: n, fallback_codex: fb.value ? [fb.value] : [], agent_reviews: rv,
+        ai_scripts: scripts.value.split(/\r?\n/).map(x => x.trim().replace(/\\/g, "/")).filter(Boolean)};
+      if (pick && pick.value) body.use_model = {agent: pd.agent, model: pick.value};
+      await post("/api/app/autonomy", body); await post("/api/app/control", {task_id: taskId, action: "resume"});
+    } catch (e) { err.textContent = errText(e); go.disabled = false; }
+  };
+  return h("div", {class: "projbox"}, h("b", {text: modelAuth ? "בחר מודל כדי להמשיך" : "איך להמשיך מכאן"}),
+    legacy ? h("div", {class: "small", text: "המשימה נוצרה לפני שדרוג העצמאות, ולכן היא פועלת במצב 'כמו קודם': כל שאלה של Codex מגיעה אליך. בחר רמת עצמאות כדי שהמשך יטופל לבד בתוך הגבולות — ההיסטוריה, התקציב, האישורים והקבצים נשמרים."}) : null,
+    pick ? h("label", {class: "fld"}, h("span", {text: "המודל שהמשימה תשתמש בו מעכשיו (מהרשימה שהכלי המותקן מציע, במנוי הקיים)"}), pick) : null,
+    h("label", {class: "fld"}, h("span", {text: "רמת עצמאות"}), lvl),
+    need.length ? h("div", {class: "small"}, h("b", {text: "מה התוכנית צריכה: "}), h("span", {dir: "auto", text: need.map(x => (x.kind === "artifact_reviews" ? "סקירות Codex של תוצרים ×" + x.count : "הרצת יכולות AI של המוצר דרך " + x.path + " ×" + x.count) + (x.reason ? " — " + x.reason : "")).join(" · ")})) : null,
+    h("label", {class: "fld"}, h("span", {text: "סקירות Codex של תוצרים שהסוכנים רשאים לבקש (מבוצעות ע״י המתזמר, במודל המאושר, נספרות בתקציב)"}), revs),
+    h("label", {class: "fld"}, h("span", {text: "סקריפטים של המוצר שמפעילים את יכולות ה-AI שלו (נתיב יחסי בכל שורה; רק הם רשאים להפעיל Claude/Codex)"}), scripts),
+    h("label", {class: "fld"}, h("span", {text: "קריאות AI אמיתיות שהסקריפטים האלה רשאים לבצע (נספרות ונאכפות ע״י המתזמר, רק במודלים שאושרו; 0 = לשאול אותי)"}), runs),
+    h("label", {class: "fld"}, h("span", {text: "מודל גיבוי ל-Codex אם המודל הנוכחי לא זמין"}), fb),
+    h("div", {class: "row"}, go),
+    h("div", {class: "small", text: "בהמשך תחת 'מאוזן' או 'עצמאי': Codex בודק שוב את העבודה הקיימת ומחליט בעצמו על השאלה הטכנית — Claude לא חוזר על הצעד הקודם."}));
+}
+function rootBar(st) {  /* where THIS task's agents work - always visible on top of the task */
+  if (!st || !st.workspace) return null;
+  const pr = st.project || {}, moved = st.handed_off_to || [], link = id => { const a = h("a", {href: "#", class: "mono", text: id}); a.onclick = ev => { ev.preventDefault(); goTask(id); }; return a; };
+  const bar = h("div", {class: "rootbar" + (pr.mode === "existing_project" ? " ex" : "") + (moved.length ? " moved" : ""), role: "note", "aria-label": "תיקיית העבודה של המשימה"});
+  if (pr.mode === "existing_project") {
+    bar.append(h("b", {text: "פרויקט קיים מאושר:"}), h("span", {class: "files", dir: "ltr", text: pr.root || st.workspace}),
+      h("span", {class: "small", text: "Claude עובד ישירות בתיקייה הזו; Codex מקבל ממנה את הקבצים והשינויים דרך המתזמר." + (pr.authorized_at ? " אושר " + fmtDate(pr.authorized_at) + "." : "")}));
+    if (pr.handoff) bar.append(h("span", {class: "small", text: "הקשר ממשימה:"}), link(pr.handoff.from_task));
+  } else bar.append(h("b", {text: pr.mode === "new_workspace" ? "תיקיית עבודה מבודדת:" : "תיקיית העבודה:"}), h("span", {class: "files", dir: "ltr", text: st.workspace}));
+  bar.append(autonomyChip(st));
+  if (moved.length) { const m = moved[moved.length - 1];
+    bar.append(h("div", {}, h("b", {text: "המשימה הועברה: "}), h("span", {text: "העבודה ממשיכה בפרויקט הקיים "}), h("span", {class: "files", dir: "ltr", text: m.project_root}), h("span", {text: " במשימה "}), link(m.task_id),
+      h("span", {text: ". המשימה הזו נשמרת כמו שהיא לעיון בלבד, ואי אפשר להמשיך אותה בתיקייה הישנה שלה."}))); }
+  return bar;
+}
+function filesPanel(st) {
+  if (!APP || UI.replay || !st || st.run_state === "active" || st.run_state === "waiting") return null;
+  const box = h("section", {class: "filesbox", "aria-label": "הקבצים בתיקיית העבודה"}, h("div", {class: "label", text: "הקבצים בתיקיית העבודה"}));
+  if (!UI.files) { UI.files = "loading"; api("/api/app/files", "&task=" + encodeURIComponent(taskId)).then(r => { UI.files = r; schedule(); }).catch(() => { UI.files = null; }); }
+  const f = UI.files && UI.files !== "loading" ? UI.files : null;
+  if (!f) { box.append(h("div", {class: "small", text: "טוען..."})); return box; }
+  const open = h("button", {type: "button", text: "פתח את התיקייה"}); open.onclick = () => post("/api/app/open-folder", {task_id: taskId}).catch(e => alert(errText(e)));
+  box.append(h("div", {class: "row"}, h("span", {class: "files", text: f.workspace}), open));
+  const view = h("div", {});
+  box.append(h("ul", {class: "flist"}, ...f.files.map(x => { const b = h("button", {type: "button", class: "linkbtn", text: x.path}); b.onclick = () => api("/api/app/file", "&task=" + encodeURIComponent(taskId) + "&path=" + encodeURIComponent(x.path)).then(r => view.replaceChildren(codeBlock(r.path, r.content, keyOf("file", r.path)))).catch(e => view.replaceChildren(h("div", {class: "err", text: errText(e)}))); return h("li", {}, b, h("span", {class: "small", text: " · " + x.bytes + " בתים"})); })), view);
+  if (!f.files.length) box.append(h("div", {class: "small", text: "התיקייה ריקה."}));
+  return box;
+}
+
+/* ---------- plain-Hebrew reasons (deterministic mapping of the orchestrator's codes; the raw code stays available) ---------- */
+function humanReason(st) {
+  const r = String((st && st.stop_reason) || ""), n = x => Number(x).toLocaleString("he-IL");
+  let m;
+  if ((m = /^budget_reached: time (\d+)\/(\d+)/.exec(r))) return "נגמר זמן העבודה שאישרת: " + n(m[1]) + " מתוך " + n(m[2]) + " דקות. העבודה שבוצעה נשמרה.";
+  if ((m = /^budget_reached: (claude|codex) calls (\d+)\/(\d+)/.exec(r))) return "נגמר מספר הפניות ל-" + (m[1] === "claude" ? "Claude" : "Codex") + " שאישרת: " + n(m[2]) + " מתוך " + n(m[3]) + ". העבודה שבוצעה נשמרה.";
+  if (/^budget_reached: (claude|codex) calls$/.test(r)) return "נגמר מספר הפניות לסוכנים שאישרת. העבודה שבוצעה נשמרה.";
+  if (/^reviewer_requested_human/.test(r)) return "Codex עצר ושאל שאלה שדורשת החלטה שלך.";
+  if (/^capability_approval_required/.test(r)) return "Claude צריך להריץ סקריפט מהפרויקט שעשוי להשפיע מחוץ לתיקייה (רשת, תוכנות אחרות, מחיקות או כלי AI). הסקריפט לא הורץ — ההחלטה שלך.";
+  if (/^unresolved_blocker/.test(r)) return "הסוכנים עצרו בעצמם בגבול שנקבע: " + ({repeated_findings: "Codex חזר על אותם ממצאים גם אחרי התיקון של Claude", corrections_exhausted: "גם אחרי סבבי התיקון האוטומטיים Codex עדיין מבקש שינויים", diminishing_returns: "סבבי הביקורת לא מקדמים עוד קריטריונים", stalled: "אין התקדמות מדידה"}[(r.split(":")[1] || "").trim()] || "גבול האוטונומיה") + ". לא נשאלת שאלה ולא נצרכו עוד קריאות; הפרטים והצעד הבא שמורים למטה.";
+  if (/^mission_capabilities_required/.test(r)) return "לפני שהעבודה מתחילה: התוכנית של Codex צריכה יכולות שלא אושרו למשימה (למשל סקירות Codex של תוצרים או הרצת יכולות ה-AI של המוצר). אפשר לאשר את כולן יחד, פעם אחת, בטופס למטה.";
+  if (/^model_authorization_required/.test(r)) return "המודל שנבחר למשימה אינו זמין במנוי או בגרסת הכלי, ואין מודל גיבוי שאישרת. שום דבר לא הוחלף לבד ולא נעשה שימוש באפשרות בתשלום — בחר מודל מהרשימה כדי להמשיך.";
+  if (/^review_loop/.test(r)) return "הבדיקות עוברות, אבל סבבי הביקורת ממשיכים לבקש שיפורים בלי שעוד קריטריון קבלה מתקיים. המערכת עצרה כדי לא לבזבז את התקציב.";
+  if (/^acceptance_unverifiable/.test(r)) return "אי אפשר להוכיח בסביבה הזו את כל קריטריוני הקבלה. אפשר לקבל את התוצאה כפי שהיא, או לספק את מה שחסר כדי לבדוק.";
+  if (/^stalled/.test(r)) return "הסוכנים חזרו על אותו צעד בלי התקדמות מדידה, ולכן המערכת עצרה כדי שתחליט.";
+  if (/^permission_denied/.test(r)) return "Claude ביקש פעולה שלא אושרה מראש, והיא מחכה לאישור שלך.";
+  if (/^internal_error/.test(r)) return "תקלה פנימית במערכת (לא בגלל הסוכנים). שום עבודה לא אבדה.";
+  if (/^malformed_output/.test(r)) return "תשובה של סוכן נדחתה בגלל שגיאת פורמט — לא בגלל התוכן.";
+  if (/^owner_continuation/.test(r)) return "אישרת להמשיך את המשימה. אם הסוכנים עוד לא התחילו (למשל כי האפליקציה נסגרה), לחץ \"המשך\".";
+  if (/^user_pause/.test(r)) return "השהית את המשימה.";
+  if (/^(user_stop|cancelled)/.test(r)) return "עצרת את המשימה.";
+  if (/^user_interrupt/.test(r)) return "הריצה הופסקה (למשל כשהחלון נסגר).";
+  if (/^acceptance verified/.test(r)) return "המשימה הושלמה: הבדיקות שהמערכת הריצה עברו, ו-Codex אישר.";
+  if (/^research report verified/.test(r)) return "המחקר הסתיים ו-Codex אישר את הדוח. המערכת בדקה את מבנה הדוח, לא את נכונות התוכן.";
+  if (/^research finished without sufficient evidence/.test(r)) return "המחקר הסתיים בלי מסקנה מבוססת (INCONCLUSIVE) — זו תוצאה כנה, לא כישלון.";
+  if (/^auth_error/.test(r)) return "בעיית התחברות לחשבון של אחד הסוכנים. התחבר מחדש ואז המשך.";
+  if (/^quota_exceeded/.test(r)) return "נגמרה המכסה במנוי של אחד הסוכנים.";
+  if (/^configuration_error/.test(r)) return "בעיית הגדרות בכלי של אחד הסוכנים. לא בוצעו ניסיונות חוזרים, והמערכת לא שינתה שום הגדרה בעצמה." + (/to continue: /.test(r) ? " מה צריך כדי להמשיך: " + r.split("to continue: ")[1] : "");
+  if (/^review_changes_requested/.test(r)) return "Codex בדק את המחקר ולא אישר אותו: הוא ביקש שינויים. שום דבר לא הופעל — ההחלטה מה לעשות היא שלך.";
+  if (/^review_rejected/.test(r)) return "Codex בדק את המחקר ודחה אותו. שום דבר לא הופעל — ההחלטה מה לעשות היא שלך.";
+  if (/^(review_failed|reviewer_error)/.test(r)) return "הביקורת העצמאית של Codex נכשלה בגלל תקלה טכנית (לא בגלל התוכן). שום דבר לא אושר. המחקר עצמו נשמר, ואפשר לנסות שוב רק את הביקורת.";
+  if (/^(executor_error|planner_error)/.test(r)) return "אחד הסוכנים נכשל בגלל תקלה טכנית.";
+  if (/^reviewer_declared_failure/.test(r)) return "Codex קבע שאי אפשר להשלים את המשימה.";
+  if (/^(max_cycles_reached|call_budget_exhausted)/.test(r)) return "הגיע מספר הסבבים או הפניות שהוגדר, בלי אישור סופי.";
+  if (/^no_progress/.test(r)) return "כמה סבבים ברצף בלי התקדמות מדידה.";
+  return r;
+}
+function ownerState(st) {  /* {tone, title, sub, need}: what the owner needs to know first */
+  const r = String(st.stop_reason || ""), s = st.status;
+  if (st.run_state === "active") return {tone: "live", title: "הסוכנים עובדים עכשיו", sub: "", need: false};
+  if ((st.handed_off_to || []).length) return {tone: "mid", title: "הועברה להמשך בפרויקט קיים", sub: "העבודה ממשיכה במשימה " + st.handed_off_to[st.handed_off_to.length - 1].task_id + ". המשימה הזו נשמרת לעיון בלבד (מצב אחרון: " + (STATUS_HE[s] || s) + ").", need: false};
+  if (st.run_state === "interrupted") return {tone: "need", title: "הריצה נקטעה — אפשר להמשיך", sub: st.internal_error ? "תקלה פנימית במערכת (לא בגלל הסוכנים). שום עבודה לא אבדה." : "הסוכנים אינם פועלים כרגע. שום עבודה לא אבדה.", need: true};
+  if (s === "HUMAN_REQUIRED") return {tone: "need", title: (st.pending_permissions || []).length ? "Claude מחכה לאישור שלך" : "ממתין להחלטה שלך", sub: humanReason(st), need: true};
+  if ((s === "PAUSED" || (s === "FAILED" && st.kind === "research")) && /^(review_failed|reviewer_error)/.test(r)) return {tone: "need", title: "הביקורת העצמאית נכשלה טכנית — לא ניתן אישור", sub: humanReason(st), need: true};
+  if (s === "PAUSED" && /^(review_changes_requested|review_rejected)/.test(r)) return {tone: "need", title: /^review_rejected/.test(r) ? "Codex דחה את המחקר — ממתין להחלטה שלך" : "Codex ביקש שינויים — ממתין להחלטה שלך", sub: humanReason(st), need: true};
+  if (s === "PAUSED" && /^owner_continuation/.test(r)) return {tone: "need", title: "ההמשך שאישרת ממתין להתחלה", sub: humanReason(st), need: true};
+  if (s === "PAUSED") return {tone: "need", title: /^budget_reached/.test(r) ? "נגמר התקציב שאישרת — ממתין להחלטה שלך" : /^internal_error/.test(r) ? "נעצר בגלל תקלה פנימית — אפשר להמשיך" : "מושהה — ממתין לך", sub: humanReason(st), need: true};
+  if (s === "FAILED" && st.kind === "research" && /^malformed_output/.test(r)) return {tone: "need", title: "נעצר בגלל שגיאת פורמט — אפשר להמשיך", sub: humanReason(st), need: true};
+  if (s === "COMPLETE" || s === "COMPLETED") return {tone: "ok", title: "הושלם", sub: humanReason(st), need: false};
+  if (s === "INCONCLUSIVE") return {tone: "mid", title: "הסתיים בלי מסקנה מבוססת", sub: humanReason(st), need: false};
+  if (s === "AWAITING_OWNER") return {tone: "need", title: "ממתין לאישור שלך להתחלה", sub: "", need: true};
+  if (s === "WAITING") return {tone: "live", title: "ממתין לתחילת הריצה", sub: "", need: false};
+  return {tone: "bad", title: (STATUS_HE[s] || s || "") + (s === "STOPPED" ? "" : " — המשימה הסתיימה בלי אישור"), sub: humanReason(st), need: false};
+}
+function summaryStale(sm, st) {  /* real WORK recorded after the summary (a pause, a question or a decision is not new work) */
+  if (!sm) return false;
+  const after = sm.after_seq != null ? sm.after_seq : null, at = sm.at || "";
+  const own = m => m.cycle === sm.cycle && m.kind === (sm.author === "codex" ? "review" : "report");
+  return S.messages.some(m => ["instruction", "report", "verification", "review"].includes(m.kind) && !own(m)
+    && (after != null ? (m.seq || 0) > after : (m.ts || "") > at));
+}
+function relTime(ts) {
+  const t = typeof ts === "number" ? ts : new Date(ts).getTime(), d = Math.max(0, (Date.now() - t) / 1000);
+  if (!isFinite(d)) return "";
+  if (d < 90) return "לפני רגע";
+  if (d < 3600) return "לפני " + Math.round(d / 60) + " דקות";
+  if (d < 2 * 3600) return "לפני שעה";
+  if (d < 86400) return "לפני " + Math.round(d / 3600) + " שעות";
+  return d < 2 * 86400 ? "אתמול" : "לפני " + Math.round(d / 86400) + " ימים";
+}
+function phaseOf(role) {  /* the executor and reviewer do research as well as code */
+  const p = PHASE[role]; if (!p) return null;
+  if (S.status && S.status.kind === "research" && role === "executor") return ["claude", "Claude חוקר ומעדכן את הדוח", "Claude מחפש מקורות, קורא, ומעדכן את הדוח לפי ההוראה של Codex."];
+  if (S.status && S.status.kind === "research" && role === "reviewer") return ["codex", "Codex בודק את המחקר", "Codex קורא את הדוח והקבצים, מאמת טענות חשובות ומחליט על הצעד הבא."];
+  return p;
+}
+function seenBaseline() {  /* 'since your last visit': kept per task in this browser only */
+  if (UI.seen === undefined) { let v = null; try { v = JSON.parse(localStorage.getItem("orchSeen:" + taskId) || "null"); } catch (e) {} UI.seen = v; }
+  try { localStorage.setItem("orchSeen:" + taskId, JSON.stringify({seq: S.lastSeq, at: Date.now()})); } catch (e) {}
+  return UI.seen;
+}
+function factsAfter(seq) {  /* the orchestrator's own records (system facts, not AI findings) after a message number */
+  const out = [];
+  for (const m of S.messages) {
+    if ((m.seq || 0) <= seq) continue;
+    const c = "סבב " + (m.cycle || 0) + ": ";
+    if (m.kind === "report") out.push(c + "Claude סיים צעד עבודה ושלח דיווח");
+    else if (m.kind === "review") { const o = obj(m) || {}; out.push(c + "Codex בדק" + (o.verdict === "COMPLETE" ? " ואישר" : o.verdict === "CONTINUE" ? " וביקש סבב נוסף" : o.verdict === "HUMAN_REQUIRED" ? " ושאל אותך שאלה" : "")); }
+    else if (m.kind === "plan") out.push("Codex הכין תוכנית עבודה");
+    else if (m.kind === "approval_request") out.push(c + "המשימה עצרה וממתינה לך");
+    else if (m.kind === "final") out.push("המשימה הסתיימה: " + humanReason({stop_reason: m.content.split(":").slice(1).join(":").trim()}));
+    else if (m.kind === "malformed_output") out.push(c + "תשובה נדחתה בבדיקת פורמט");
+    else if (m.kind === "continuation") out.push("המשכת את המשימה" + ((obj(m) || {}).note ? " עם הנחיות חדשות" : ""));
+  }
+  return out;
+}
+function overviewCard(st) {
+  if (!st || UI.replay) return null;
+  const o = ownerState(st), sm = st.status_summary, b = st.budget, el = Math.round((st.elapsed_sec || 0) / 60);
+  const box = h("section", {class: "ov t-" + o.tone, "aria-label": "מבט על"});
+  const head = h("div", {class: "oh"}, h("span", {class: "dot", "aria-hidden": "true"}), h("span", {class: "ot", text: o.title}));
+  if (canContinue(st) && st.mode === "goal" && !o.need) { const cb = h("button", {type: "button", text: "המשך משימה ↓"}); cb.onclick = () => { (UI.cont || (UI.cont = {open: false, note: "", min: 0, calls: false})).open = true; render(); const x = document.getElementById("continueBox"); if (x) x.scrollIntoView({behavior: "smooth", block: "center"}); }; head.append(cb); }
+  if (o.need) { const go = h("button", {type: "button", class: "primary", text: "למה שנדרש ממך ↓"}); go.onclick = () => { const a = document.querySelector("#main section[role=alert], #main .appbar"); if (a) a.scrollIntoView({behavior: "smooth", block: "center"}); }; head.append(go); }
+  box.append(head);
+  if (st.run_state === "active" && st.phase) { const p = phaseOf(st.phase.role) || [st.phase.agent, st.phase.agent, ""]; box.append(h("div", {class: "os"}, h("span", {text: p[1] + " · "}), h("span", {"data-since": st.phase.since}))); const ll = liveLine(st); if (ll) box.append(ll); }
+  else if (o.sub) box.append(h("div", {class: "os", text: o.sub}));
+  if (st.review_pending && st.run_state !== "active" && st.kind === "research" && !/^(review_failed|reviewer_error)/.test(st.stop_reason || "")) box.append(h("div", {class: "os", text: "הביקורת העצמאית של Codex על העבודה האחרונה עדיין לא בוצעה — היא תתבצע בהמשך."}));
+  const facts = h("div", {class: "ofacts"}, h("span", {text: (st.kind === "research" ? "מחקר" : "קוד") + " · " + ((st.cycle || 0) === 1 ? "סבב אחד" : (st.cycle || 0) + " סבבים")}));
+  if (b) facts.append(h("span", {}, h("span", {text: "זמן עבודה " + el + " מתוך " + b.max_minutes + " דק׳"}), h("span", {class: "bar"}, h("i", {"data-w": String(Math.min(100, Math.round(100 * el / Math.max(1, b.max_minutes))))}))));
+  if (st.updated_at) facts.append(h("span", {text: "עדכון אחרון " + relTime(st.updated_at)}));
+  box.append(facts);
+  if (sm && sm.sections) {
+    const stale = summaryStale(sm, st);
+    const by = sm.author === "codex" ? "לפי Codex" + (sm.on_request ? " (נכתב לבקשתך)" : "") : "לפי Claude — סיכום ביניים, טרם נבדק ע״י Codex";
+    box.append(h("div", {class: "oai"}, h("div", {class: "lbl", text: "השורה התחתונה · " + by + " · סבב " + sm.cycle + " · " + relTime(sm.at) + (stale ? " · נכתב לפני העדכונים האחרונים" : "")}),
+      h("div", {class: "bl", dir: "auto", text: sm.sections.bottom_line}),
+      sm.sections.next ? h("div", {class: "onext", dir: "auto", text: "הצעד הבא המוצע: " + sm.sections.next}) : null));
+  } else box.append(h("div", {class: "oai"}, h("div", {class: "lbl", text: "עדיין אין סיכום שכתבו הסוכנים. Codex כותב סיכום כזה בכל ביקורת."})));
+  const seen = seenBaseline();
+  if (seen && seen.seq < S.lastSeq) {
+    const f = factsAfter(seen.seq);
+    if (f.length) box.append(h("div", {class: "osince"}, h("b", {text: "מאז הביקור האחרון שלך (" + relTime(seen.at) + "):"}),
+      h("ul", {}, ...f.slice(-5).map(t => h("li", {class: "small", text: t}))), f.length > 5 ? h("div", {class: "small", text: "ועוד " + (f.length - 5) + " עדכונים בשיחה למטה."}) : null,
+      h("div", {class: "small", text: "נתוני מערכת — לא סיכום של סוכן."})));
+  }
+  const links = h("div", {class: "olinks"});
+  if (APP && st.kind === "research" && st.run_state !== "active") { const view = h("div", {}), r = h("button", {type: "button", class: "linkbtn", text: "פתח את דוח המחקר"}); r.onclick = () => api("/api/app/file", "&task=" + encodeURIComponent(taskId) + "&path=RESEARCH_REPORT.md").then(x => view.replaceChildren(codeBlock(x.path, x.content, keyOf("file", x.path)))).catch(e => view.replaceChildren(h("div", {class: "err", text: errText(e)}))); links.append(r); box.append(links, view); }
+  const full = summaryCard(st, "top"); if (full) box.append(full);
+  if (!links.childNodes.length) links.remove();
+  return box;
+}
+
+/* ---------- the owner's task status summary: AI-authored, attributed, never presented as current when work came after it ---------- */
+const SUM_SECTIONS = [["done", "מה בוצע?"], ["checked", "מה נבדק?"], ["found", "מה גילינו?"], ["open", "מה עדיין פתוח?"]];
+function sumItem(t) {
+  const m = /^(מאומת|טרם אומת|השערה)\s*:\s*/.exec(t || "");
+  return m ? h("li", {dir: "auto"}, h("span", {class: {"מאומת": "sg-v", "טרם אומת": "sg-u", "השערה": "sg-h"}[m[1]], text: m[1] + ": "}), h("span", {text: t.slice(m[0].length)}))
+           : h("li", {dir: "auto", text: t});
+}
+function factsSince(sm) {  /* the orchestrator's own records after the summary: system status, NOT AI-authored findings */
+  const out = [], after = sm ? (sm.after_seq != null ? sm.after_seq : null) : null, at = sm ? sm.at || "" : "";
+  for (const m of S.messages) {
+    if (after != null ? m.seq <= after : (at && (m.ts || "") <= at)) continue;  /* only what the orchestrator recorded AFTER the summary */
+    if (sm && m.cycle === sm.cycle && m.kind === (sm.author === "codex" ? "review" : "report")) continue;  /* the summary's own message */
+    if (sm && sm.final && m.kind === "final") continue;
+    const who = AG[m.sender] ? AG[m.sender].name : m.sender, c = "סבב " + (m.cycle || 0) + ": ";
+    if (m.kind === "instruction") out.push(c + "Claude קיבל הוראה חדשה");
+    else if (m.kind === "report") out.push(c + "Claude שלח דיווח" + ((m.meta || {}).recovered ? " (שוחזר אחרי שגיאת פורמט)" : ""));
+    else if (m.kind === "malformed_output") out.push(c + "תשובה של " + who + " נדחתה בבדיקת פורמט");
+    else if (m.kind === "verification") out.push(c + "המערכת בדקה את הקבצים");
+    else if (m.kind === "review") out.push(c + "Codex כתב ביקורת");
+    else if (m.kind === "approval_request") out.push(c + "המשימה מחכה להחלטה שלך");
+    else if (m.kind === "control") out.push("פעולה שלך: " + m.content);
+    else if (m.kind === "final") out.push("המשימה נעצרה/הסתיימה: " + m.content);
+  }
+  return out;
+}
+function summaryCard(st, place) {
+  if (!st || UI.replay) return null;
+  const sm = st.status_summary, active = st.run_state === "active", key = "sum:" + place;
+  const defOpen = place === "bottom" || active;  /* when the task is not running, the open copy is the one at the bottom */
+  const det = h("details", {class: "sumcard", "aria-label": "סיכום מצב המשימה"});
+  det.open = UI.open.has(key) ? true : UI.open.has(key + ":closed") ? false : defOpen;
+  det.addEventListener("toggle", () => { UI.open.delete(key); UI.open.delete(key + ":closed"); UI.open.add(det.open ? key : key + ":closed"); });
+  const status = st.run_state === "interrupted" ? "הריצה נקטעה — אפשר להמשיך" : (STATUS_HE[st.status] || st.status || "") + (active ? " · עובדים כעת" : "");
+  const author = !sm ? "אין עדיין סיכום שנכתב ע״י סוכן" : sm.author === "codex" ? (sm.final ? "Codex · סיכום סופי" : sm.on_request ? "Codex · נכתב לבקשתך" : "Codex · אחרי ביקורת")
+    : "Claude · סיכום ביניים — טרם נבדק ע״י Codex";
+  det.append(h("summary", {}, h("span", {class: "ttl", text: "סיכום מצב המשימה"}), h("span", {class: "chip c-info", text: status}),
+    h("span", {class: "chip " + (!sm ? "c-warn" : sm.author === "codex" ? "c-approve" : "c-warn"), text: author}),
+    sm ? h("span", {class: "small", text: "עודכן בסבב " + sm.cycle + " · " + fmtDate(sm.at)}) : null));
+  const body = h("div", {class: "sbody"});
+  const facts = factsSince(sm), stale = summaryStale(sm, st);
+  if (sm) {
+    const x = sm.sections || {};
+    if (stale) body.append(h("div", {class: "stale", role: "note", text: "הסיכום נכתב בסבב " + sm.cycle + ", ומאז התרחשו פעולות נוספות — הוא אינו משקף אותן. ראה \"פעילות מאז הסיכום\" למטה."}));
+    if (x.bottom_line) body.append(h("div", {}, h("h4", {text: "השורה התחתונה"}), h("div", {class: "bl", dir: "auto", text: x.bottom_line})));
+    for (const [k, label] of SUM_SECTIONS) if ((x[k] || []).length) body.append(h("div", {}, h("h4", {text: label}), h("ul", {}, ...x[k].map(sumItem))));
+    if (x.next) body.append(h("div", {}, h("h4", {text: "מה הצעד הבא?"}), h("div", {class: "nx", dir: "auto", text: x.next})));
+    if (sm.author !== "codex") body.append(h("div", {class: "small t-warn", text: "סיכום ביניים של Claude: ממצאים שלא אומתו עדיין לא נבדקו באופן עצמאי ע״י Codex."}));
+    if (sm.on_request && sm.basis) body.append(h("div", {class: "small", text: "נכתב לבקשתך על סמך: " + ((sm.basis.read || []).join(", ") || "רשומות המשימה") + "."}));
+  } else {
+    body.append(h("div", {class: "small", text: "עדיין לא נשמר סיכום שנכתב ע״י סוכן למשימה זו. זה מצבה לפי נתוני המערכת בלבד (לא סיכום של סוכן):"}));
+    const c = st.calls || {};
+    body.append(h("ul", {}, h("li", {text: "מצב: " + status + (st.stop_reason ? " — " + st.stop_reason : "")}), h("li", {text: "סבבים שהושלמו: " + (st.cycle || 0)}),
+      h("li", {text: "קריאות: Codex " + (c.codex || 0) + " · Claude " + (c.claude || 0)}),
+      st.elapsed_sec != null ? h("li", {text: "זמן עבודה: " + Math.round(st.elapsed_sec / 60) + " דקות"}) : null));
+  }
+  if (facts.length && (!sm || stale)) body.append(h("div", {class: "facts"}, h("h4", {text: sm ? "פעילות מאז הסיכום (נתוני מערכת — לא סיכום של סוכן)" : "פעילות אחרונה (נתוני מערכת)"}),
+    h("ul", {}, ...facts.slice(-8).map(t => h("li", {class: "small", text: t})))));
+  if (APP && !active && st.workspace) {
+    const view = h("div", {}), btn = h("button", {type: "button", class: "linkbtn", text: st.kind === "research" ? "פתח את דוח המחקר" : "הצג את הקבצים"});
+    btn.onclick = () => st.kind === "research" ? api("/api/app/file", "&task=" + encodeURIComponent(taskId) + "&path=RESEARCH_REPORT.md").then(r => view.replaceChildren(codeBlock(r.path, r.content, keyOf("file", r.path)))).catch(e => view.replaceChildren(h("div", {class: "err", text: errText(e)})))
+      : (document.querySelector(".filesbox") || {scrollIntoView() {}}).scrollIntoView({behavior: "smooth", block: "start"});
+    body.append(h("div", {class: "row"}, btn), view);
+  }
+  if (APP && st.summary_api && !active && !st.is_mock && (!sm || stale)) {
+    const e = h("span", {class: "err"}), b = h("button", {type: "button", text: "צור סיכום מהקבצים השמורים (קריאה אחת ל-Codex)"});
+    b.onclick = async () => {
+      if (!confirm("Codex יקרא את הקבצים והרשומות השמורים ויכתוב סיכום מצב. זו קריאה אחת למודל, והיא נספרת בתקציב Codex של המשימה. להמשיך?")) return;
+      b.disabled = true; try { await post("/api/app/summarize", {task_id: taskId, confirm: true}); e.className = "small"; e.textContent = "Codex כותב סיכום... הוא יופיע כאן כשיסתיים."; } catch (er) { e.className = "err"; e.textContent = errText(er); b.disabled = false; }
+    };
+    body.append(h("div", {class: "row"}, b, e));
+  }
+  const hist = st.status_summary_history || [];
+  if (hist.length) body.append(h("details", {}, h("summary", {class: "small", text: "סיכומים קודמים (" + hist.length + ")"}),
+    h("ul", {}, ...hist.slice().reverse().map(x => h("li", {class: "small", dir: "auto", text: "סבב " + x.cycle + " · " + (x.author === "codex" ? "Codex" : "Claude") + " · " + fmtDate(x.at) + ": " + (x.bottom_line || "")})))));
+  det.append(body);
+  return det;
+}
+
+/* ---------- conversation mode ---------- */
+function visible() { return UI.replay ? S.messages.slice(0, UI.replay.n) : S.messages; }
+function typing() {
+  const st = S.status; if (UI.replay || !st || st.run_state !== "active" || !st.phase) return null;
+  const p = phaseOf(st.phase.role) || [st.phase.agent, st.phase.agent + " עובד", ""]; const el = h("span", {class: "small", "data-since": st.phase.since});
+  if (p[0] === "sys" || !AG[p[0]]) return h("div", {class: "sys"}, h("div", {class: "sh"}, h("span", {class: "chip c-info", text: p[1] + "..."}), h("span", {class: "dots"}, h("i"), h("i"), h("i")), el), h("div", {class: "small", text: p[2]}));
+  return h("div", {class: "turn typing " + p[0]}, h("div", {class: "av", text: AG[p[0]].mono}), h("div", {class: "bub"}, h("span", {class: "nm", text: p[1]}), h("span", {class: "dots"}, h("i"), h("i"), h("i")), h("span", {text: " "}), el,
+    h("div", {class: "small", text: p[2] + " ממתין לתשובה — ההודעה תופיע כשתתקבל במלואה."}), liveLine(st)));
+}
+function liveLine(st) {  /* the latest observable activity of the running call, or an honest "cannot see / quiet" notice */
+  const since = (st.phase && st.phase.since) || "", recent = S.activity.filter(a => (a.ts || "") >= since), last = recent[recent.length - 1];
+  if (!last) return null;
+  if (last.notice && /^quiet:/.test(last.text || "")) return h("div", {class: "small t-warn", role: "status", text: "אין פעילות נראית כבר " + Math.max(1, Math.round((last.quiet_sec || 0) / 60)) + " דקות. התהליך עדיין רץ — ייתכן שהסוכן חושב או מריץ כלי ארוך. הוא לא ייעצר אוטומטית: אפשר להמשיך לחכות או לעצור את המשימה."});
+  if (last.notice) return h("div", {class: "small t-warn", role: "status", text: "לא ניתן לראות כרגע את הפעילות של Claude (יומן הסשן לא נמצא). התהליך עדיין רץ; שקט אינו נחשב כשל — אפשר להמשיך לחכות או לעצור."});
+  return h("div", {class: "small", dir: "auto", text: "פעילות אחרונה: " + last.text});
+}
+function convView() {
+  const msgs = visible(), wrap = h("div", {class: "chat"});
+  if (isMock()) wrap.append(h("div", {class: "mock", role: "note"}, h("span", {class: "mtag", text: "MOCK"}), h("span", {text: "שיחת הדגמה. אף מודל AI לא הופעל — ההודעות נכתבו מראש כדי להדגים את התצוגה."})));
+  if (!UI.replay && S.status && S.status.run_state === "awaiting_owner") wrap.append(h("div", {class: "mock", role: "status"}, h("span", {class: "mtag", text: "ממתין"}), h("span", {text: RS.awaiting_owner[0] + " — " + RS.awaiting_owner[1]})));
+  const task = msgs.find(m => m.kind === "task");
+  if (task) {
+    const long = task.content.length > 260 || task.content.split("\n").length > 4, t = h("div", {class: "text" + (long && !UI.open.has("task") ? " clamp" : ""), dir: "auto", text: task.content});
+    const kids = [h("div", {class: "label", text: "המשימה שלך"}), t];
+    if (long) { const b = h("button", {class: "linkbtn", type: "button", text: UI.open.has("task") ? "הצג פחות" : "הצג את כל המשימה"}); b.onclick = () => { const on = !UI.open.has("task"); on ? UI.open.add("task") : UI.open.delete("task"); t.classList.toggle("clamp", !on); b.textContent = on ? "הצג פחות" : "הצג את כל המשימה"; }; kids.push(b); }
+    wrap.append(h("div", {class: "taskp"}, ...kids));
+  }
+  const ovc = overviewCard(S.status); if (ovc) wrap.prepend(ovc);
+  const dp = decisionsPanel(S.status); if (dp && ovc) ovc.after(dp); else if (dp) wrap.prepend(dp);
+  const bk = blockerCard(S.status); if (bk && ovc) ovc.after(bk);  /* level 1: the owner's overview, above everything */
+  let cyc = 0;
+  for (const m of msgs) {
+    if (m.kind === "task") continue;
+    if ((m.cycle || 0) > cyc && m.kind !== "final") { cyc = m.cycle; wrap.append(h("div", {class: "cdiv", role: "separator", text: "סבב " + cyc + (S.status && S.status.max_cycles && S.status.mode !== "goal" ? " מתוך " + S.status.max_cycles : "")})); }
+    const el = convItem(m, msgs); if (el) wrap.append(el);
+  }
+  const ty = typing(); if (ty) wrap.append(ty);
+  const rc = resultCard(evidence(msgs)); if (rc) wrap.append(rc);
+  if (S.status && S.status.run_state !== "active") { const scb = summaryCard(S.status, "bottom"); if (scb) wrap.append(scb); }
+  for (const el of appPanels(S.status)) wrap.append(el);  /* decisions for the owner: at the bottom, next to the latest messages */
+  const cp = S.status && continuePanel(S.status, msgs); if (cp) wrap.append(cp);
+  const fp = filesPanel(S.status); if (fp) wrap.append(fp);
+  if (!msgs.length) wrap.append(h("div", {class: "empty", text: S.status && S.status.run_state === "waiting" ? "ממתין להודעה הראשונה..." : "אין הודעות בשיחה זו."}));
+  return wrap;
+}
+
+/* ---------- technical mode (complete original record) ---------- */
+function techMsg(m) {
+  const o = obj(m);
+  const pre = h("pre", {dir: "auto", text: m.content});
+  const fmt = h("pre", {dir: "ltr", text: o ? JSON.stringify(o, null, 2) : m.content});
+  const btns = h("div", {class: "tbtns"});
+  if (o) btns.append(toggleBtn("JSON מעוצב", "הסתר JSON מעוצב", keyOf("tfmt", m.seq), fmt));
+  else fmt.hidden = true;
+  btns.append(copyBtn(m.content, "העתק מקור"));
+  const metaKeys = Object.keys(m.meta || {});
+  let metaEl = null;
+  if (metaKeys.length) { metaEl = h("div", {}, ...metaKeys.map(k => codeBlock("meta." + k, typeof m.meta[k] === "string" ? m.meta[k] : JSON.stringify(m.meta[k], null, 2), keyOf("tmeta", m.seq, k)))); btns.append(toggleBtn("meta (" + metaKeys.join(", ") + ")", "הסתר meta", keyOf("tm", m.seq), metaEl)); }
+  return h("div", {class: "tmsg m-" + m.sender, "data-seq": m.seq},
+    h("div", {class: "th"}, h("b", {text: "#" + m.seq}), h("span", {text: "cycle " + (m.cycle == null ? "-" : m.cycle)}), h("span", {text: m.ts}),
+      h("b", {text: m.sender + " → " + m.recipient}), h("span", {text: "[" + m.kind + "]"}), h("span", {text: "delivery=" + m.delivery}), h("span", {text: m.content.length + " chars"})),
+    h("div", {class: "raw"}, h("div", {class: "rl", text: "תוכן מקורי מדויק"}), pre), fmt, btns, metaEl);
+}
+function techEvent(e, kind) {
+  const d = e.data || {}; let sum = "";
+  if (kind === "act") sum = e.source + ": " + e.text;
+  else if (e.event === "agent_start" || e.event === "agent_end") sum = d.agent + " · " + d.role;
+  else if (e.event === "agent_meta") sum = [d.role, d.tool, d.model, d.effort, d.duration_s != null ? d.duration_s + "s" : null, d.usage ? "in " + (d.usage.input_tokens != null ? d.usage.input_tokens : "?") + " / out " + (d.usage.output_tokens != null ? d.usage.output_tokens : "?") : null, d.session_id].filter(Boolean).join(" · ");
+  else sum = Object.keys(d).slice(0, 6).join(", ");
+  const det = kind === "act" ? null : codeBlock("event data", JSON.stringify(d, null, 2), keyOf("tev", e.eseq));
+  const row = h("div", {class: "tev " + (kind === "meta" ? "meta" : kind === "act" ? "act" : "")},
+    h("div", {class: "th"}, h("span", {text: kind === "act" ? "progress" : e.event}), h("span", {text: "cycle " + (e.cycle == null ? "-" : e.cycle)}), h("span", {text: e.ts || ""}), h("span", {text: sum})));
+  if (det) row.append(toggleBtn("פרטים", "הסתר", keyOf("tevo", e.eseq), det), det);
+  return row;
+}
+function techView() {
+  const msgs = visible(), lastTs = UI.replay ? (msgs.length ? msgs[msgs.length - 1].ts : "") : null;
+  const okTs = t => lastTs === null || (t || "") <= lastTs;
+  const bar = h("div", {class: "tbar"}, h("span", {text: "התיעוד המלא כפי שנשמר: כל שולח ונמען, טקסט מקורי, פרומפטים, אירועים ונתוני מודל."}), h("span", {class: "mono", text: "task_id: " + taskId}));
+  for (const [k, lbl] of [["msg", "הודעות"], ["sys", "אירועי מערכת"], ["meta", "נתוני מודל"], ["act", "התקדמות"]]) {
+    const c = h("input", {type: "checkbox"}); c.checked = UI.filters[k]; c.onchange = () => { UI.filters[k] = c.checked; render(); };
+    bar.append(h("label", {}, c, h("span", {text: lbl})));
+  }
+  const items = [];
+  if (UI.filters.msg) for (const m of msgs) items.push({t: m.ts, o: 2, n: m.seq, el: () => techMsg(m)});
+  for (const e of S.events) { const k = e.event === "agent_meta" ? "meta" : "sys"; if (UI.filters[k] && okTs(e.ts)) items.push({t: e.ts, o: 1, n: e.eseq, el: () => techEvent(e, k)}); }
+  if (UI.filters.act) for (const a of S.activity) if (okTs(a.ts)) items.push({t: a.ts, o: 0, n: a.eseq, el: () => techEvent(a, "act")});
+  items.sort((x, y) => (x.t || "") < (y.t || "") ? -1 : (x.t || "") > (y.t || "") ? 1 : x.o - y.o || x.n - y.n);
+  const list = h("div", {class: "tlist"}, ...items.map(i => i.el()));
+  if (!items.length) list.append(h("div", {class: "empty", text: "אין רשומות להצגה."}));
+  const wrap = h("div", {}, bar, list);
+  if (S.attachments.length && !UI.replay) wrap.append(h("div", {class: "card"}, h("h2", {text: "קבצי ריצה נוספים (פלט CLI גולמי שנשמר)"}),
+    ...S.attachments.map(a => codeBlock(a.name, JSON.stringify(a.data, null, 2), keyOf("att", a.name)))));
+  return wrap;
+}
+
+/* ---------- side panel: state, who is working, cycles (the outcome lives only in the conversation) ---------- */
+function cycleList(msgs, st, active) {
+  const cs = [...new Set(msgs.filter(m => m.cycle > 0).map(m => m.cycle))].sort((a, b) => a - b);
+  return cs.map(c => {
+    const parts = [], vs = verShort(lastVer(msgs, c));
+    if (vs) parts.push(vs); else if (msgs.some(m => m.kind === "report" && m.cycle === c)) parts.push(["no", "לא הורצו בדיקות"]);
+    const rv = msgs.filter(m => m.kind === "review" && m.cycle === c).map(obj).filter(Boolean).pop();
+    if (rv && VERDICT[rv.verdict]) parts.push([{COMPLETE: "approve", CONTINUE: "warn", HUMAN_REQUIRED: "human", FAILED: "bad"}[rv.verdict], VERDICT[rv.verdict][0]]);
+    else if (active && c === st.cycle) parts.push(["no", "בעבודה..."]);
+    return h("li", {}, h("b", {text: "סבב " + c}), ...parts.map(([s, t], i) => h("span", {class: "t-" + s, text: (i ? "· " : "") + t})));
+  });
+}
+function renderSide() {
+  const st = S.status || {}, msgs = visible(), side = $("side"); side.replaceChildren();
+  const waiting = !UI.replay && st.run_state !== "active" && (st.status === "PAUSED" || st.status === "HUMAN_REQUIRED");
+  const rs = UI.replay ? REPLAY_RS : waiting ? ["ממתין להחלטה שלך", "המשימה עצרה ומחכה לך. שום עבודה לא אבדה — אפשר להמשיך מאותה נקודה.", "st-warn"]
+    : (RS[st.run_state] || RS.saved), active = !UI.replay && st.run_state === "active";
+  const kids = [h("h2", {text: "מצב"}), h("span", {class: "state " + rs[2], text: rs[0]}), h("p", {class: "explain", text: rs[1]})];
+  if (active && st.phase) {
+    const p = phaseOf(st.phase.role) || [st.phase.agent, st.phase.agent, ""];
+    kids.push(h("div", {class: "now"}, h("span", {class: "who-" + p[0], text: "עובד כעת: " + p[1]}), h("span", {class: "dots who-" + p[0]}, h("i"), h("i"), h("i")), h("span", {class: "small", "data-since": st.phase.since})),
+      h("div", {class: "explain", text: p[2]}),
+      h("div", {class: "steps", "aria-label": "השלב הנוכחי בסבב"}, ...STEPS.map(([rs, l]) => h("div", {class: "step" + (rs.includes(st.phase.role) ? " cur " + (PHASE[st.phase.role] || ["sys"])[0] : ""), "aria-current": rs.includes(st.phase.role) ? "step" : null, text: l}))));
+  } else kids.push(h("div", {class: "now"}, h("span", {class: "who-sys", text: UI.replay ? "מנגן הודעות שנשמרו" : active ? "המערכת בין שלבים" : "אף סוכן אינו פועל כעת"})));
+  if (isMock()) kids.push(h("div", {class: "meta-line"}, h("span", {class: "mtag", text: "MOCK"}), h("span", {text: " ללא מודל אמיתי"})));
+  side.append(h("div", {class: "card"}, ...kids));
+  const cl = cycleList(msgs, st, active);
+  if (cl.length) side.append(h("div", {class: "card"}, h("h2", {text: "סבבים" + (st.max_cycles && !UI.replay && st.mode !== "goal" ? " (עד " + st.max_cycles + ")" : "")}), h("ul", {class: "cycles"}, ...cl)));
+  if (st.mode === "goal" && st.budget) {
+    const b = st.budget, calls = st.calls || {}, el = Math.round((st.elapsed_sec || 0) / 60), cs = st.criteria_status || [];
+    const pct = (a, z) => h("div", {class: "bar"}, h("i", {style: null, "data-w": String(Math.min(100, Math.round(100 * a / Math.max(1, z))))}));
+    const crit = (st.acceptance_criteria || []).map((c, i) => { const v = cs[i]; return h("li", {}, h("span", {class: v === "met" ? "t-approve" : v === "not_met" ? "t-bad" : "t-no", text: v === "met" ? "✓" : v === "not_met" ? "✗" : "•"}), h("span", {dir: "auto", text: c})); });
+    side.append(h("div", {class: "card goal"}, h("h2", {text: "מטרה והתקדמות"}),
+      h("div", {class: "small", text: "עבודה עד להשגת המטרה" + (st.kind === "research" ? " · מחקר" : " · קוד")}),
+      crit.length ? h("div", {}, h("div", {class: "label", text: "קריטריונים (הסימון לפי Codex; ההשלמה נקבעת רק לפי ראיות)"}), h("ul", {class: "crit"}, ...crit)) : null,
+      h("div", {text: "סבבים: " + (st.cycle || 0) + " (דיווח התקדמות כל " + b.checkpoint_cycles + ")"}),
+      h("div", {text: "זמן עבודה: " + el + " / " + b.max_minutes + " דק׳"}), pct(el, b.max_minutes),
+      h("div", {text: "קריאות: Codex " + (calls.codex || 0) + "/" + b.max_codex_calls + " · Claude " + (calls.claude || 0) + "/" + b.max_claude_calls}),
+      st.strategy ? h("details", {}, h("summary", {text: "האסטרטגיה הנוכחית (ההוראה האחרונה)"}), h("div", {class: "text small", dir: "auto", text: st.strategy})) : null,
+      st.stop_reason && st.run_state !== "active" ? h("div", {class: "small", title: st.stop_reason, text: "סיבת עצירה: " + humanReason(st)}) : null));
+  }
+  const ag = st.agent_settings;
+  if (ag) side.append(h("div", {class: "card"}, h("h2", {text: "המודלים בשימוש"}),
+    h("div", {class: "meta-line"}, h("b", {class: "who-codex", text: "Codex: "}), h("span", {class: "files", text: ag.codex_model + " · " + ag.codex_effort})),
+    h("div", {class: "meta-line"}, h("b", {class: "who-claude", text: "Claude: "}), h("span", {class: "files", text: (ag.claude_model || "ברירת מחדל") + " · " + (ag.claude_effort || "ברירת מחדל")}))));
+  side.append(h("div", {class: "card side-extra"}, h("h2", {text: "המשתתפים"}), h("div", {class: "legend"},
+    h("div", {}, h("span", {class: "dot cx"}), h("b", {text: "Codex"}), h("span", {text: "— מנהל ומבקר"})),
+    h("div", {}, h("span", {class: "dot cl"}), h("b", {text: "Claude"}), h("span", {text: "— מבצע: כותב קוד וחוקר"}))),
+    h("p", {class: "explain", text: "המערכת המקומית מעבירה את ההודעות ומריצה בדיקות. היא אינה סוכן AI."})));
+  const first = S.messages[0], lastM = S.messages[S.messages.length - 1];
+  side.append(h("div", {class: "card side-extra"}, h("h2", {text: "פרטי השיחה"}),
+    h("div", {class: "meta-line", text: "הודעות: " + S.messages.length + (UI.replay ? " (מוצגות " + msgs.length + ")" : "")}),
+    first ? h("div", {class: "meta-line", text: "התחלה: " + fmtDate(first.ts)}) : null,
+    lastM ? h("div", {class: "meta-line", text: "הודעה אחרונה: " + fmtDate(lastM.ts)}) : null,
+    h("div", {class: "meta-line", text: "מזהה משימה:"}), h("div", {class: "mono", text: taskId})));
+}
+
+/* ---------- render loop ---------- */
+function optText(t, st) {
+  const live = (st ? st.run_state : t.run_state) === "active";
+  return (t.is_mock ? "MOCK · " : "") + (live ? "פעילה · " : "") + fmtDate(t.mtime) + " · " + iso((t.short_title || t.id).replace(/^MOCK\s*[—-]\s*/, ""));
+}
+function nearBottom() { return window.innerHeight + window.scrollY >= document.body.scrollHeight - 160; }
+function render() {
+  const stick = nearBottom();
+  $("modeConv").setAttribute("aria-pressed", String(UI.mode === "conv")); $("modeTech").setAttribute("aria-pressed", String(UI.mode === "tech"));
+  $("layout").classList.toggle("noside", !UI.side); $("sideBtn").setAttribute("aria-pressed", String(!UI.side)); $("sideBtn").textContent = UI.side ? "הסתר פאנל" : "הצג פאנל";
+  renderSide();
+  const t = S.tasks.find(x => x.id === taskId), opt = [...$("taskSel").options].find(o => o.value === taskId);
+  if (t && opt && S.status) opt.textContent = optText(Object.assign({}, t, {is_mock: S.status.is_mock}), S.status);
+  if (S.status) { $("title").textContent = mockPrefix(S.status.short_title || taskId, S.status.is_mock); $("title").title = S.status.title || ""; }
+  $("main").replaceChildren(...[rootBar(S.status), UI.mode === "conv" ? convView() : techView()].filter(Boolean));
+  tick();
+  document.querySelectorAll(".bar i[data-w]").forEach(i => { i.style.width = i.dataset.w + "%"; });
+  if (stick) window.scrollTo(0, document.body.scrollHeight);
+}
+function schedule() { if (UI.queued) return; UI.queued = true; setTimeout(() => { UI.queued = false; render(); }, 40); }  /* timer, not requestAnimationFrame: keeps updating in background tabs */
+function tick() { document.querySelectorAll("[data-since]").forEach(el => { const d = (Date.now() - new Date(el.dataset.since).getTime()) / 1000; el.textContent = isNaN(d) ? "" : Math.max(0, Math.round(d)) + " שנ׳"; }); }
+setInterval(tick, 1000);
+function setConn(ok, text) { $("conn").className = ok ? "conn-ok" : "conn-down"; $("connText").textContent = text; }
+function connect() {
+  const es = new EventSource("/stream?t=" + encodeURIComponent(TOKEN) + "&task=" + encodeURIComponent(taskId) + "&after=" + S.lastSeq + "&eafter=" + S.lastE);
+  es.onopen = () => { UI.errors = 0; setConn(true, "הדפדפן מחובר לשרת המקומי (מעיד על החיבור בלבד — לא על כך שהסוכנים פועלים)"); };
+  es.addEventListener("message", ev => { const m = JSON.parse(ev.data); if (m.seq > S.lastSeq) { S.lastSeq = m.seq; S.messages.push(m); schedule(); } });
+  es.addEventListener("activity", ev => { const a = JSON.parse(ev.data); if ((a.eseq || 0) > S.lastE) { S.activity.push(a); S.lastE = Math.max(S.lastE, a.eseq || 0); schedule(); } });
+  es.addEventListener("sysevent", ev => { const e = JSON.parse(ev.data); if ((e.eseq || 0) > S.lastE) { S.events.push(e); S.lastE = Math.max(S.lastE, e.eseq || 0); schedule(); } });
+  es.addEventListener("status", ev => { S.status = JSON.parse(ev.data); schedule(); });
+  es.onerror = () => { UI.errors++; setConn(false, UI.errors > 3 ? "החיבור לשרת המקומי נותק — מה שכבר נטען נשאר בדף. לפתיחה מחדש: python orchestrator.py serve" : "מתחבר מחדש לשרת המקומי..."); };
+}
+async function load() {
+  S.tasks = (await api("/api/tasks")).tasks;
+  const sel = $("taskSel"); sel.replaceChildren();
+  if (APP) { $("homeBtn").hidden = false; $("homeBtn").onclick = goHome; document.querySelector("footer .fx").textContent = "127.0.0.1 בלבד · פעולות דורשות אישור שלך · מוצג בדיוק מה שנשמר (סודות מוסתרים)"; }
+  if (APP && !taskId) return renderHome();
+  if (!taskId && S.tasks.length) taskId = S.tasks[0].id;
+  for (const t of S.tasks) sel.append(h("option", {value: t.id, text: optText(t)}));
+  if (!taskId) { $("main").replaceChildren(h("div", {class: "empty", text: "עדיין אין שיחות שמורות. השיחה תופיע כאן כשמשימה תתחיל."})); setTimeout(() => location.reload(), 2000); return; }
+  if (![...sel.options].some(o => o.value === taskId)) sel.append(h("option", {value: taskId, text: "ממתין · " + iso(taskId)}));
+  sel.value = taskId;
+  sel.onchange = () => { const u = new URL(location.href); u.searchParams.set("task", sel.value); location.href = u.toString(); };
+  let snap = null;
+  for (let i = 0; i < 240 && !snap; i++) { try { snap = await api("/api/snapshot", "&task=" + encodeURIComponent(taskId)); } catch (e) { await new Promise(r => setTimeout(r, 500)); } }
+  if (!snap) { $("main").replaceChildren(h("div", {class: "empty", text: "לא ניתן לטעון את השיחה."})); return; }
+  Object.assign(S, {messages: snap.messages, activity: snap.activity, events: snap.events || [], attachments: snap.attachments || [], status: snap.status});
+  S.lastSeq = Math.max(0, ...S.messages.map(m => m.seq));
+  S.lastE = Math.max(0, ...S.activity.map(a => a.eseq || 0), ...S.events.map(e => e.eseq || 0));
+  document.title = mockPrefix(snap.status.short_title || taskId, snap.status.is_mock) + " · שיחת Codex ו-Claude";
+  render();
+  const ask = document.querySelector("#main section[role=alert], #main .perm");  /* a decision is waiting: show it, not the top */
+  if (ask) ask.scrollIntoView({block: "center"}); else window.scrollTo(0, 0);
+  connect();
+}
+function setMode(m) { UI.mode = m; try { localStorage.setItem("orchViewerMode", m); } catch (e) {} render(); }
+$("modeConv").onclick = () => setMode("conv");
+$("modeTech").onclick = () => setMode("tech");
+$("sideBtn").onclick = () => { UI.side = !UI.side; try { localStorage.setItem("orchViewerSide", UI.side ? "1" : "0"); } catch (e) {} render(); };
+$("replayBtn").onclick = async () => {
+  if (UI.replay) { UI.replay.stop = true; return; }
+  UI.replay = {n: 0, stop: false}; $("replayBtn").textContent = "■ עצור הפעלה חוזרת"; render(); window.scrollTo(0, 0);
+  while (UI.replay && !UI.replay.stop && UI.replay.n < S.messages.length) {
+    await new Promise(r => setTimeout(r, parseInt($("speed").value, 10)));
+    if (!UI.replay || UI.replay.stop) break;
+    UI.replay.n++; render(); window.scrollTo(0, document.body.scrollHeight);
+  }
+  UI.replay = null; $("replayBtn").textContent = "▶ הפעלה חוזרת"; render();
+};
+load().catch(e => { $("main").replaceChildren(h("div", {class: "empty", text: "שגיאה בטעינה: " + e.message})); });
+</script>
+</body>
+</html>

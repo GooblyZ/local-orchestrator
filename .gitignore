@@ -1,0 +1,27 @@
+# runtime state, logs, locks, approvals
+runs/
+*.log
+state.json
+events.jsonl
+control.json
+*.lock
+live_approval*
+# secrets / environment
+.env
+.env.*
+*.pem
+*.key
+auth.json
+credentials*
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.tmp*
+
+# local toolchain (installed binaries)
+toolchain/
+
+# task workspaces created by the start command
+workspaces/

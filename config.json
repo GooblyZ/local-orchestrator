@@ -1,0 +1,133 @@
+{
+  "max_cycles": 8,
+  "quiet_notice_sec": 600,
+  "review_material_chars": 150000,
+  "max_executor_turns": 20,
+  "process_timeout_sec": 120,
+  "verification_timeout_sec": 300,
+  "max_no_progress": 2,
+  "min_tests_ran": 1,
+  "require_changes": true,
+  "max_instruction_chars": 8000,
+  "runs_dir": "runs",
+  "verify_command": [
+    "python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests"
+  ],
+  "command_allowlist": [
+    [
+      "python",
+      "-m",
+      "unittest"
+    ],
+    [
+      "python",
+      "-m",
+      "pytest"
+    ]
+  ],
+  "protected_path_patterns": [
+    ".env",
+    ".env.*",
+    "*.pem",
+    "*.key",
+    "id_rsa*",
+    "auth.json",
+    "credentials*",
+    ".git",
+    ".ssh",
+    ".claude",
+    ".codex",
+    ".aws"
+  ],
+  "snapshot_ignore_dirs": [
+    ".git",
+    "__pycache__",
+    "node_modules",
+    ".venv",
+    "venv"
+  ],
+  "max_file_write_bytes": 1000000,
+  "deletes_require_approval": true,
+  "live": {
+    "enabled": false,
+    "approval_file": "live_approval.json"
+  },
+  "codex": {
+    "executable": "toolchain/codex/node_modules/.bin/codex.cmd",
+    "home": "~/.codex-orchestrator-home",
+    "pinned_version": "0.162.1",
+    "model": "gpt-6-sol",
+    "reasoning_effort": "high",
+    "web_search": true,
+    "timeout_sec": 180,
+    "max_prompt_chars": 400000,
+    "required_disabled_features": [
+      "hooks",
+      "plugins",
+      "apps",
+      "shell_tool",
+      "skill_search",
+      "fast_mode",
+      "ultrafast_mode",
+      "multi_agent",
+      "memories",
+      "plugin_sharing",
+      "remote_plugin"
+    ]
+  },
+  "claude": {
+    "executable": "claude.cmd",
+    "pinned_version": "2.1.293",
+    "model": null,
+    "effort": null,
+    "permission_mode": "dontAsk",
+    "timeout_sec": 180,
+    "max_prompt_chars": 400000,
+    "tools": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "Bash",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "allowed_tools": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "Bash(python -m unittest *)",
+      "Bash(python -m pytest *)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "disallowed_tools": [
+      "Bash(git push *)",
+      "Bash(rm *)",
+      "Bash(del *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(pip *)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/id_rsa*)",
+      "Read(**/auth.json)",
+      "Read(**/credentials*)"
+    ]
+  },
+  "viewer": {
+    "web": true,
+    "auto_open_browser": true,
+    "port": 0
+  }
+}
