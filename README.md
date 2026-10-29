@@ -120,40 +120,75 @@ The Python orchestrator is not an agent. It relays messages, keeps the Claude se
 
 ## Start the local server (browser app)
 
+In this section `<project>` means the folder you cloned this repository into, for example
+`C:\Users\User\VibeCoding\projects\local-ai-orchestrator`. Every path below is written out in full.
+
 **Requirements (once):**
-1. Windows with **Python 3.11+** on PATH (`python --version`). The orchestrator itself uses only the standard library.
-2. **Claude Code CLI** installed and signed in with your Claude subscription (`claude` on PATH; `claude auth status` must show `claude.ai`). The pinned version is set in `config.json` (`claude.pinned_version`).
-3. **Codex CLI**, project-local (never the global install), plus Node.js/npm:
+1. **Python 3.11+** on PATH. Check in any terminal: `python --version`. The orchestrator itself uses only the standard library.
+2. **Claude Code CLI** installed globally and signed in with your Claude subscription. Check in any terminal:
+   `where claude` (must find `claude.cmd`) and `claude auth status` (must show `claude.ai`).
+   The expected version is `claude.pinned_version` in `<project>\config.json`.
+3. **Node.js + npm** on PATH (`npm --version`), then the **project-local Codex CLI**. In a terminal opened in `<project>\toolchain\codex`:
    ```
-   cd toolchain\codex
+   cd <project>\toolchain\codex
    npm install @openai/codex@0.162.1
    ```
-   Codex runs with its own home folder `%USERPROFILE%\.codex-orchestrator-home` (sign in there with your ChatGPT account, `forced_login_method = "chatgpt"`, read-only sandbox, no MCP servers, no `service_tier`). See [Codex adapter](#codex-adapter-planner--reviewer) for every required setting.
-4. Check both CLIs without any model call - each prints exactly what is still missing:
+   This creates `<project>\toolchain\codex\node_modules\.bin\codex.cmd` - the only Codex the orchestrator runs
+   (the global Codex install is never used).
+4. **Codex's own home folder** `%USERPROFILE%\.codex-orchestrator-home` (e.g. `C:\Users\<you>\.codex-orchestrator-home`),
+   separate from your normal `%USERPROFILE%\.codex`. Create it and sign in there with your ChatGPT account, in a
+   **cmd** terminal opened in `<project>`:
    ```
+   cd <project>
+   mkdir "%USERPROFILE%\.codex-orchestrator-home"
+   set CODEX_HOME=%USERPROFILE%\.codex-orchestrator-home
+   toolchain\codex\node_modules\.bin\codex.cmd login
+   ```
+   Its settings file is `%USERPROFILE%\.codex-orchestrator-home\config.toml`; it must contain `forced_login_method = "chatgpt"`,
+   `sandbox_mode = "read-only"`, `approval_policy = "never"`, `[skills] include_instructions = false`, no MCP servers and no
+   `service_tier`. See [Codex adapter](#codex-adapter-planner--reviewer) for every required setting.
+5. Check both CLIs without any model call, in a terminal opened in `<project>` - each prints exactly what is still missing:
+   ```
+   cd <project>
    python orchestrator.py codex-preflight
    python orchestrator.py claude-preflight
    ```
 
 **Start it:**
-- **Double-click `start.cmd`** in the project folder, or from a terminal in the project folder run:
+- **Double-click `<project>\start.cmd`**, or in a terminal opened in `<project>` run:
   ```
+  cd <project>
   python -B orchestrator.py app
   ```
-- The console prints the address, e.g. `http://127.0.0.1:55295/?t=<token>`, and your browser opens it automatically. The server listens on **127.0.0.1 only** (this computer); the `t=` token in the URL is required, so use the printed link.
-- **Keep the console window open** while you use the app or a task runs (you may minimize it). Closing it stops the server; a running task then shows as interrupted and can be resumed later - nothing is lost.
+- The console prints the address, e.g. `http://127.0.0.1:55295/?t=<token>`, and your browser opens it automatically. The server
+  listens on **127.0.0.1 only** (this computer); the `t=` token in the URL is required, so use the printed link.
+- **Keep the console window open** while you use the app or a task runs (you may minimize it). Closing it stops the server; a
+  running task then shows as interrupted and can be resumed later - nothing is lost.
 
-**Options** (they go before `app`):
+**Options** (in a terminal opened in `<project>`; they go before `app`):
 ```
-python -B orchestrator.py --port 8765 app     # a fixed port instead of a random free one
+cd <project>
+python -B orchestrator.py --port 8765 app     # a fixed port instead of a random free one -> http://127.0.0.1:8765/?t=<token>
 python -B orchestrator.py --no-open app       # do not open the browser; just print the URL
 ```
 
+**Where things are:**
+| What | Path |
+|------|------|
+| Start file | `<project>\start.cmd` |
+| Settings (models, timeouts, permissions) | `<project>\config.json` |
+| Address of the running app (`url`) | `<project>\runs\_app.json` |
+| Every task's record (state, conversation, events) | `<project>\runs\<task_id>\` |
+| New isolated task folders | `<project>\workspaces\<date>-<name>\` |
+| Codex CLI used by the orchestrator | `<project>\toolchain\codex\node_modules\.bin\codex.cmd` |
+| Codex home (login + `config.toml`) | `%USERPROFILE%\.codex-orchestrator-home\` |
+| Hebrew user guide | `<project>\docs\user-guide-he.md` |
+
 **Good to know:**
-- Starting it again while it runs (a second `start.cmd`) does not start a second server: it reopens the running app in the browser.
-- The current address is also saved in `runs/_app.json` (`url`).
+- Starting it again while it runs (a second `<project>\start.cmd`) does not start a second server: it reopens the running app.
 - To stop: close the console window, or press `Ctrl+C` in it.
-- If the page says a preflight failed, run the two preflight commands above; nothing calls a model until you confirm a task in the browser.
+- If the page says a preflight failed, run the two preflight commands from step 5; nothing calls a model until you confirm a
+  task in the browser.
 
 ## Setup
 Python 3.11+ (uses `tomllib`) and the standard library only. Nothing to install for the orchestrator itself.
